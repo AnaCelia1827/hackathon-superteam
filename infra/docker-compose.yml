@@ -1,0 +1,43 @@
+# Local LoopRail stack: Solana base layer + MagicBlock Ephemeral Rollup.
+#
+#   make dev     # start base + ER in the background
+#   make logs    # follow
+#   make down    # stop
+#
+# host networking mirrors the MagicBlock local-development guide (base :8899/:8900, ER :7799/:7800).
+services:
+  base:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: looprail-dev
+    network_mode: host
+    command: ["bash", "-lc", "mb-test-validator --reset"]
+
+  er:
+    image: looprail-dev
+    network_mode: host
+    depends_on:
+      - base
+    command:
+      - bash
+      - -lc
+      - |
+        for i in $$(seq 1 60); do
+          curl -s -o /dev/null "http://127.0.0.1:8899" -X POST -H 'content-type: application/json' \
+            -d '{"jsonrpc":"2.0","id":1,"method":"getHealth"}' && break || sleep 1;
+        done
+        ephemeral-validator \
+          --remotes "http://127.0.0.1:8899" \
+          --remotes "ws://127.0.0.1:8900" \
+          -l "0.0.0.0:7799" \
+          --lifecycle ephemeral
+
+  tools:
+    image: looprail-dev
+    network_mode: host
+    profiles: ["tools"]
+    volumes:
+      - ../:/workspace
+    working_dir: /workspace
+    command: ["sleep", "infinity"]
