@@ -4,7 +4,7 @@
   "step_index": 0,
   "tool": "market_data",
   "provider": "market_data",
-  "outcome": "success",
+  "outcome": "ok",
   "reason": "within_policy",
   "cost_usdc_base_units": 1000,
   "provider_latency_ms": 26,

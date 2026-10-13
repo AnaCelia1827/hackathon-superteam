@@ -251,7 +251,7 @@ class ExecutionEngine:
         )
         if decision.action == "cache_hit":
             self.tracker.record_cache_hit()
-            return _event(self.session_id, index, tool.name, provider, "cache_hit", decision.reason, cache_hit=True), cached[1], 0
+            return _event(self.session_id, index, tool.name, provider, "ok", decision.reason, cache_hit=True), cached[1], 0
         if decision.action == "fallback":
             if fallback_tool is None or fallback_tool.provider != decision.provider:
                 raise ValueError("Policy fallback has no matching tool")
@@ -290,7 +290,7 @@ class ExecutionEngine:
                 reason = "fallback_provider" if decision.action == "fallback" else "within_policy"
                 return (
                     _event(
-                        self.session_id, index, tool.name, provider, "success", reason,
+                        self.session_id, index, tool.name, provider, "ok", reason,
                         cost=result.actual_cost_usdc_base_units, latency=result.provider_latency_ms,
                         retry_count=attempt, retry_backoff_ms=backoff_ms,
                     ),

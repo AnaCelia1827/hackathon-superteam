@@ -4,7 +4,7 @@ export type Step = {
   step_index: number;
   tool: string;
   provider: string;
-  outcome: "success" | "error" | "denied" | "cache_hit";
+  outcome: "ok" | "error" | "timeout" | "denied";
   cost_usdc_base_units: number;
   provider_latency_ms: number;
   looprail_overhead_ms: number | null;

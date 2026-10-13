@@ -33,7 +33,7 @@ export function parseOpen(value: unknown): OpenSession {
 export function parseStep(value: unknown, sessionId: string): Step {
   if (!object(value) || value.version !== 1 || value.session_id !== sessionId ||
       !integer(value.step_index, 0xffffffff) || !str(value.tool) || !str(value.provider) ||
-      !["success", "error", "denied", "cache_hit"].includes(String(value.outcome)) ||
+      !["ok", "error", "timeout", "denied"].includes(String(value.outcome)) ||
       !integer(value.cost_usdc_base_units) || !integer(value.provider_latency_ms, 0xffffffff) ||
       !(value.looprail_overhead_ms === null || integer(value.looprail_overhead_ms, 0xffffffff)) ||
       typeof value.cache_hit !== "boolean" || !str(value.occurred_at) ||

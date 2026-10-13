@@ -11,7 +11,10 @@
     "step_index": { "type": "integer", "minimum": 0 },
     "tool": { "type": "string", "minLength": 1 },
     "provider": { "type": "string", "minLength": 1 },
-    "outcome": { "enum": ["success", "error", "denied", "cache_hit"] },
+    "outcome": {
+      "enum": ["ok", "error", "timeout", "denied"],
+      "description": "On-chain u8 encoding: ok=0, error=1, timeout=2, denied=3."
+    },
     "reason": { "type": "string" },
     "cost_usdc_base_units": { "type": "integer", "minimum": 0 },
     "provider_latency_ms": { "type": "integer", "minimum": 0 },
@@ -20,5 +23,11 @@
     "retry_count": { "type": "integer", "minimum": 0 },
     "retry_backoff_ms": { "type": "integer", "minimum": 0 },
     "occurred_at": { "type": "string", "format": "date-time" }
-  }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "cache_hit": { "const": true } } },
+      "then": { "properties": { "cost_usdc_base_units": { "const": 0 } } }
+    }
+  ]
 }
