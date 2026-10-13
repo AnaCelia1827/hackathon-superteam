@@ -1,0 +1,13 @@
+{
+  "session_id": "sess-20261012-0001",
+  "step_idx": 0,
+  "tool_idx": 0,
+  "provider_idx": 0,
+  "tool_id": "market-data",
+  "provider_id": "prov-market-data",
+  "cost": 1000,
+  "latency_ms": 142,
+  "outcome": "ok",
+  "cache_hit": false,
+  "timestamp_ms": 1760300000000
+}

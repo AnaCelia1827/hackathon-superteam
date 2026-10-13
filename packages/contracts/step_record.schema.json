@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://looprail.local/schemas/v1/step_record.schema.json",
+  "title": "StepRecord",
+  "description": "One metered agent step, emitted by the runtime and persisted by the ledger service. Mirrors the on-chain Session.steps[K] ring-buffer entry: the compact indices (tool_idx, provider_idx) are what the Anchor program stores; the string ids are the ToolRegistry handles the runtime uses.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "session_id",
+    "step_idx",
+    "tool_idx",
+    "provider_idx",
+    "tool_id",
+    "provider_id",
+    "cost",
+    "latency_ms",
+    "outcome",
+    "cache_hit",
+    "timestamp_ms"
+  ],
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Client-chosen session identifier; part of the Session PDA seeds."
+    },
+    "step_idx": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "0-based, strictly monotonic per session. The ledger dedupes retries on (session_id, step_idx)."
+    },
+    "tool_idx": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255,
+      "description": "Compact ToolRegistry index stored on-chain (u8)."
+    },
+    "provider_idx": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255,
+      "description": "Compact provider index stored on-chain; indexes Session.channels[N]."
+    },
+    "tool_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Canonical tool handle in the ToolRegistry, e.g. market-data."
+    },
+    "provider_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Canonical provider handle."
+    },
+    "cost": {
+      "$ref": "#/$defs/usdc_base_units",
+      "description": "Amount committed for this step. Must be 0 when cache_hit is true."
+    },
+    "latency_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295,
+      "description": "Provider/tool latency measured by the runtime (u32). Excludes LoopRail overhead."
+    },
+    "outcome": {
+      "$ref": "#/$defs/outcome"
+    },
+    "cache_hit": {
+      "type": "boolean",
+      "description": "True when the step was served from the policy cache."
+    },
+    "timestamp_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Unix epoch milliseconds, UTC."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "cache_hit": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "cost": {
+            "const": 0
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "usdc_base_units": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "USDC base units (6 decimals). 1 USDC = 1000000. Never a float."
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "error",
+        "timeout",
+        "denied"
+      ],
+      "description": "On-chain u8 encoding: ok=0, error=1, timeout=2, denied=3."
+    }
+  }
+}
