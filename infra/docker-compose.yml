@@ -5,6 +5,9 @@
 #   make down    # stop
 #
 # host networking mirrors the MagicBlock local-development guide (base :8899/:8900, ER :7799/:7800).
+#
+# security_opt is required: Agave's solana-test-validator needs io_uring, which is blocked by the
+# default seccomp profile (and SELinux labels block it under rootless podman).
 services:
   base:
     build:
@@ -12,22 +15,33 @@ services:
       dockerfile: Dockerfile
     image: looprail-dev
     network_mode: host
+    security_opt:
+      - seccomp=unconfined
+      - label=disable
     command: ["bash", "-lc", "mb-test-validator --reset"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null -X POST -H 'content-type: application/json' -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getHealth\"}' http://127.0.0.1:8899"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+      start_period: 15s
 
   er:
     image: looprail-dev
     network_mode: host
+    security_opt:
+      - seccomp=unconfined
+      - label=disable
     depends_on:
-      - base
+      base:
+        condition: service_healthy
     command:
       - bash
       - -lc
       - |
-        for i in $$(seq 1 60); do
-          curl -s -o /dev/null "http://127.0.0.1:8899" -X POST -H 'content-type: application/json' \
-            -d '{"jsonrpc":"2.0","id":1,"method":"getHealth"}' && break || sleep 1;
-        done
-        ephemeral-validator \
+        # base is healthy, but give its WS/geyser a moment before the ER connects.
+        sleep 5
+        ephemeral-validator --no-tui --reset \
           --remotes "http://127.0.0.1:8899" \
           --remotes "ws://127.0.0.1:8900" \
           -l "0.0.0.0:7799" \
@@ -36,6 +50,9 @@ services:
   tools:
     image: looprail-dev
     network_mode: host
+    security_opt:
+      - seccomp=unconfined
+      - label=disable
     profiles: ["tools"]
     volumes:
       - ../:/workspace
