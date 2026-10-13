@@ -1,7 +1,7 @@
 # AGENTS.md
 
 LoopRail is a runtime + metered-payment layer for autonomous AI agents on Solana.
-Hackathon repo with shared contracts, a Python runtime prototype, and a local dashboard. Person A's on-chain and payment services are not implemented yet.
+Hackathon repo with shared contracts, a Python runtime, an Anchor program, a TypeScript ledger service, an MPP adapter, owned provider endpoints, and a local dashboard. The A5 base/ER path and a paid 50-step agent run still need end-to-end verification.
 
 ## Sources of truth
 - `looprail_implementation_plan.md` — task plan (J1-J4, A1-A10, B1-B8), pinned versions, constraints. Primary.
@@ -16,7 +16,7 @@ The original PDF is in Portuguese. Read the English implementation plan before s
 ## Hard conventions (from the plan)
 - All money is USDC base units (6 decimals) as **integers**, never float. Applies to contracts/schemas and the ledger.
 - `policy_hash` = hash of canonical JSON per RFC 8785 (same scheme pay-kit uses); it is stored in the on-chain PDA.
-- Planned commands (not yet implemented): `make dev` should bring up validator + local ER + stub services; CI runs lint + tests.
+- `make dev` brings up the base validator and local ER; the owned providers run separately from `apps/providers`. CI runs contracts, runtime, and fake-chain ledger tests, but no validator or paid integration test.
 - Pin versions exactly: Solana 3.1.9, Rust 1.89.0, Anchor 1.0.2, Node 24.10.0, Python >= 3.11, `solana_pay_kit==0.10.0`.
   - Note: `anchor-cli 1.0.2` self-installs Agave **3.0.0/3.1.10**, not 3.1.9; ER SDK is `@magicblock-labs/ephemeral-rollups-sdk@0.16.2`, validator `@magicblock-labs/ephemeral-validator@0.14.10`.
 - Devnet/local only. Never commit keys (use `Signer.file`/env); pay-kit refuses the demo signer on mainnet.
@@ -33,6 +33,6 @@ The original PDF is in Portuguese. Read the English implementation plan before s
 - **MagicBlock ER duplicate-tx trap:** identical instructions collide (same blockhash/message) and the second is silently dropped — `record_step` must carry a strictly monotonic `step_idx` (or unique seed). Cost the A1 spike a debugging cycle.
 - **Measured (A1):** ER write p50 **~44 ms** vs base **~417 ms** (~9.4x); `checkpoint` **~13 ms**; terminal `commit_and_undelegate` **~29.5 s** (ER committor finalization, not configurable) — batch it into one terminal commit.
 - **pay-kit `upto` (A2):** the Python **server** issues a correct `upto` challenge, but the high-level `PayKitClient` does **not** auto-pay `upto` (only `exact`); the low-level builder at `protocols/x402/client/upto/payment.py` is unwired. Use the Python MPP `session` path (A3) as primary.
-- **MPP session (A3):** the Python pay-kit runs the full flow end-to-end (`open` → N reserve/commit cumulative vouchers → `close`). Server needs `SessionConfig.current_slot_provider` (open-freshness) + `session_routes` for reserve/commit, and `close` is handled by `Session.handle` (Authorization header), not `session_routes`. Real on-chain `settledSignature` needs the `solana-foundation/payment-channels` program + funded USDC mint; the Surfpool sandbox (`https://402.surfnet.dev:8899`) runs **no** payment-channels program, so close is a state flip (`onchain_settlement=false`) — deferred to A7 `PaymentAdapter`.
+- **MPP session (A3/A7):** the Python pay-kit runs `open` → reserve/commit cumulative vouchers → `close`. Server needs `SessionConfig.current_slot_provider` (open freshness) + `session_routes` for reserve/commit; `close` is handled by `Session.handle` (Authorization header). The wire-only 50-voucher spike has no settlement. A later funded Surfpool sandbox run confirmed one on-chain settlement for two vouchers; see `spikes/a3-mpp-session/README.md`.
 - Policy Engine is pure (no I/O). Invariant: `spent + reserved <= budget` must hold under concurrency; reserve before spending.
-- Priority / critical path: A3 done -> A7 -> B6. Fallback per-call x402 `upto` remains (server-side) if the session settle path slips.
+- Priority / critical path: validate A5/A6 on base + ER, connect A6/A7 through B6 to real paid providers, then verify a 50-step paid run. Per-call x402 `upto` remains server-side only.

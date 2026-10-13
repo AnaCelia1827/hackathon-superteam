@@ -110,8 +110,9 @@ require the validator.
 ### In progress or not yet connected
 
 - The A5 base-to-ER path has not been verified in this Windows environment.
-- The deterministic agent prototype still uses virtual payments. Its live
-  integration with the ledger and MPP adapter is pending.
+- The SDK now connects injected A6 and A7 adapters, reconciles receipts, and
+  stops on uncertain payment commits. The default deterministic agent still
+  uses virtual payments; no 50-step paid run has been verified.
 - The dashboard labels mock/replay amounts as simulated and shows a separate
   recorded sandbox settlement; it does not start new paid runs.
 - The ledger queue is in memory; restarting the service loses queued events.

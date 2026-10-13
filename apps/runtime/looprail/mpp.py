@@ -94,7 +94,7 @@ class MppSessionAdapter:
     def open(self, provider: str, allocation: int) -> Channel:
         _usdc(allocation, "allocation")
         with self._lock:
-            if provider not in self._urls:
+            if provider not in self._urls and allocation > 0:
                 raise ValueError(f"No MPP session endpoint for provider {provider}")
             existing = self._channels.get(provider)
             if existing:
@@ -102,7 +102,7 @@ class MppSessionAdapter:
                     raise ValueError("Provider allocation changed after open")
                 return existing.channel
             channel = Channel(f"mpp-pending-{uuid4().hex}", provider, allocation)
-            self._channels[provider] = _State(channel, self._urls[provider])
+            self._channels[provider] = _State(channel, self._urls.get(provider, ""))
             return channel
 
     def reserve(self, channel: Channel, maximum: int) -> PaymentReservation:

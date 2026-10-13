@@ -82,56 +82,83 @@ class ExecutionEngine:
 
     async def run(self, agent: MarketIntelligenceAgent) -> dict[str, Any]:
         plan = agent.plan()
-        self.ledger.open(self.session_id, self.policy.hash)
+        validate_policy = getattr(self.ledger, "validate_policy", None)
+        if validate_policy is not None:
+            validate_policy(self.policy, {step.tool for step in plan})
         self.channels = {
             provider: self.payment.open(provider, allocation)
             for provider, allocation in self.policy.allocations.items()
         }
+        self.ledger.open(self.session_id, self.policy.hash)
         self._publish_budget()
         outputs: dict[int, dict[str, Any]] = {}
         logical_ms = 0
         last_signature = None
         repeated_count = 0
         index = 0
-        while index < len(plan):
-            if self.stop_event.is_set():
-                self.tracker.abort()
-                break
-            group = [plan[index]]
-            group_key = plan[index].parallel_group
-            if group_key is not None:
-                while index + len(group) < len(plan) and plan[index + len(group)].parallel_group == group_key:
-                    group.append(plan[index + len(group)])
-            jobs = []
-            for offset, step in enumerate(group):
-                signature = request_signature(step.tool, step.arguments)
-                repeated_count = repeated_count + 1 if signature == last_signature else 1
-                last_signature = signature
-                jobs.append(self._execute_step(index + offset, step, logical_ms, repeated_count, signature))
-            results = await asyncio.gather(*jobs)
-            logical_ms += max((elapsed for _, _, elapsed in results), default=0)
-            for event, output, _ in results:
-                event["occurred_at"] = (START_TIME + timedelta(milliseconds=logical_ms)).isoformat().replace("+00:00", "Z")
-                self.ledger.record_step(self.session_id, event)
-                if output is not None:
-                    outputs[event["step_index"]] = output
-                if self.event_sink is not None:
-                    self.event_sink(dict(event))
-            index += len(group)
-            if self.wall_delay_ms:
-                await asyncio.sleep(self.wall_delay_ms / 1000)
+        mock_adapters = isinstance(self.payment, MockPaymentAdapter) and isinstance(self.ledger, MockLedger)
+        authorized = refunded = settlements = 0
+        try:
+            while index < len(plan):
+                if self.stop_event.is_set():
+                    self.tracker.abort()
+                    break
+                group = [plan[index]]
+                group_key = plan[index].parallel_group
+                if group_key is not None:
+                    while index + len(group) < len(plan) and plan[index + len(group)].parallel_group == group_key:
+                        group.append(plan[index + len(group)])
+                jobs = []
+                for offset, step in enumerate(group):
+                    signature = request_signature(step.tool, step.arguments)
+                    repeated_count = repeated_count + 1 if signature == last_signature else 1
+                    last_signature = signature
+                    jobs.append((index + offset, step, logical_ms, repeated_count, signature))
+                # A paid run never starts the next provider call while a voucher is uncertain.
+                if self.mode == "live":
+                    for job in jobs:
+                        event, output, elapsed = await self._execute_step(*job)
+                        logical_ms += elapsed
+                        event["occurred_at"] = (START_TIME + timedelta(milliseconds=logical_ms)).isoformat().replace("+00:00", "Z")
+                        self.ledger.record_step(self.session_id, event)
+                        if output is not None:
+                            outputs[event["step_index"]] = output
+                        if self.event_sink is not None:
+                            self.event_sink(dict(event))
+                else:
+                    results = await asyncio.gather(*(self._execute_step(*job) for job in jobs))
+                    logical_ms += max((elapsed for _, _, elapsed in results), default=0)
+                    for event, output, _ in results:
+                        event["occurred_at"] = (START_TIME + timedelta(milliseconds=logical_ms)).isoformat().replace("+00:00", "Z")
+                        self.ledger.record_step(self.session_id, event)
+                        if output is not None:
+                            outputs[event["step_index"]] = output
+                        if self.event_sink is not None:
+                            self.event_sink(dict(event))
+                index += len(group)
+                if self.wall_delay_ms:
+                    await asyncio.sleep(self.wall_delay_ms / 1000)
 
-        if self.stop_event.is_set():
-            self.ledger.abort(self.session_id)
-        else:
-            self.ledger.close(self.session_id)
-        receipts = self.payment.close_all()
+            receipts = self.payment.close_all()
+            if not mock_adapters:
+                authorized, refunded, settlements = self._reconcile_receipts(receipts)
+            if self.stop_event.is_set():
+                self.ledger.abort(self.session_id)
+            else:
+                self.ledger.close(self.session_id)
+        except Exception as error:
+            self.tracker.abort()
+            for operation in (lambda: self.ledger.abort(self.session_id), self.payment.close_all):
+                try:
+                    operation()
+                except Exception as cleanup_error:
+                    error.add_note(f"Cleanup needs reconciliation: {cleanup_error}")
+            raise
         events = self.ledger.events(self.session_id)
         latencies = [event["provider_latency_ms"] for event in events if event["provider_latency_ms"] > 0]
         overheads = [event["looprail_overhead_ms"] for event in events if event["looprail_overhead_ms"] is not None]
-        mock_adapters = isinstance(self.payment, MockPaymentAdapter) and isinstance(self.ledger, MockLedger)
-        if not mock_adapters:
-            raise NotImplementedError("Real receipt-based metrics require the A6/A7 adapters")
+        if self.mode == "live" and (isinstance(self.payment, MockPaymentAdapter) or isinstance(self.ledger, MockLedger)):
+            raise ValueError("Live mode requires real ledger and payment adapters")
         metrics = {
             "version": 1,
             "session_id": self.session_id,
@@ -143,13 +170,13 @@ class ExecutionEngine:
             "looprail_overhead_p50_ms": int(median(overheads)) if overheads else None,
             "looprail_overhead_p95_ms": _percentile(overheads, 0.95) if overheads else None,
             "policy_budget_usdc_base_units": self.policy.budget_usdc_base_units,
-            "usdc_authorized_base_units": 0,
+            "usdc_authorized_base_units": authorized,
             "usdc_reserved_base_units": self.tracker.reserved,
             "usdc_spent_base_units": sum(event["cost_usdc_base_units"] for event in events),
-            "usdc_refunded_base_units": 0,
-            "onchain_transactions": 0,
-            "settlements": 0,
-            "source": "simulation",
+            "usdc_refunded_base_units": refunded,
+            "onchain_transactions": 0 if mock_adapters else None,
+            "settlements": settlements,
+            "source": "simulation" if mock_adapters or any(receipt.get("simulated") for receipt in receipts) else "ledger_and_receipts",
             "retry_count": sum(event["retry_count"] for event in events),
         }
         if metrics["usdc_spent_base_units"] != self.tracker.spent:
@@ -162,6 +189,36 @@ class ExecutionEngine:
             "policy_hash": self.policy.hash,
             "status": "aborted" if self.stop_event.is_set() else "closed",
         }
+
+    def _reconcile_receipts(self, receipts: list[dict[str, Any]]) -> tuple[int, int, int]:
+        authorized = refunded = settlements = 0
+        seen_providers: set[str] = set()
+        for receipt in receipts:
+            provider = receipt.get("provider")
+            deposited = receipt.get("usdc_deposited")
+            spent = receipt.get("usdc_spent")
+            refund = receipt.get("usdc_refunded")
+            count = receipt.get("settlements")
+            simulated = receipt.get("simulated")
+            if provider not in self.policy.allocations or provider in seen_providers:
+                raise ValueError("Payment receipt has an unknown or duplicate provider")
+            seen_providers.add(provider)
+            if any(type(value) is not int or value < 0 for value in (deposited, spent, refund, count)):
+                raise ValueError("Payment receipt has invalid USDC amounts or settlement count")
+            if (type(simulated) is not bool or deposited != spent + refund
+                    or deposited > self.policy.allocations[provider]
+                    or spent != self.tracker.provider_spent[provider]
+                    or count != (0 if simulated else 1)):
+                raise ValueError("Payment receipt does not reconcile")
+            if not simulated and not (receipt.get("settled_signature") or receipt.get("signature")):
+                raise ValueError("On-chain payment receipt has no settlement signature")
+            authorized += deposited
+            refunded += refund
+            settlements += count
+        if (authorized - refunded != self.tracker.spent
+                or any(spent and provider not in seen_providers for provider, spent in self.tracker.provider_spent.items())):
+            raise ValueError("Payment receipts and budget tracker disagree about spending")
+        return authorized, refunded, settlements
 
     def _publish_budget(self) -> None:
         if self.telemetry_sink is not None:
@@ -214,12 +271,16 @@ class ExecutionEngine:
                 return _event(self.session_id, index, tool.name, provider, "denied", reserve_decision.reason, retry_count=attempt), None, elapsed_ms
             self._publish_budget()
             payment_reservation = None
+            commit_started = False
+            payment_committed = False
             try:
                 payment_reservation = self.payment.reserve(self.channels[provider], estimate)
                 result = await self.tools.invoke(tool.name, step.arguments, attempt)
                 if result.actual_cost_usdc_base_units > estimate:
                     raise ValueError("Provider cost exceeded the authorized estimate")
+                commit_started = True
                 self.payment.commit(payment_reservation, result.actual_cost_usdc_base_units)
+                payment_committed = True
                 self.tracker.commit(budget_reservation, result.actual_cost_usdc_base_units)
                 self._publish_budget()
                 elapsed_ms += result.provider_latency_ms
@@ -237,8 +298,24 @@ class ExecutionEngine:
                     elapsed_ms,
                 )
             except Exception as error:
+                if payment_committed:
+                    raise RuntimeError(
+                        f"Payment committed for reservation {payment_reservation.id} "
+                        "but local accounting failed; reconciliation is required"
+                    ) from error
                 if payment_reservation is not None:
-                    self.payment.release(payment_reservation)
+                    try:
+                        self.payment.release(payment_reservation)
+                    except Exception as release_error:
+                        raise RuntimeError(
+                            f"Payment reservation {payment_reservation.id} needs reconciliation; "
+                            "stop the session before another provider call"
+                        ) from release_error
+                if commit_started:
+                    raise RuntimeError(
+                        f"Payment commit for reservation {payment_reservation.id} failed; "
+                        "the provider call must not be repeated"
+                    ) from error
                 final = attempt == self.policy.max_retries_per_step
                 self.tracker.release(budget_reservation, error=final, final=final)
                 self._publish_budget()

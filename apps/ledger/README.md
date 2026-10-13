@@ -19,4 +19,4 @@ Use Node 24.10.0 or newer. Install dependencies with `npm install` in this direc
 
 The Anchor adapter in `src/anchor-chain.ts` follows the A5 instruction signatures in `programs/looprail-session/src/lib.rs`. It uses the configured base RPC for init/delegation and the fixed ER RPC for records, checkpoints and terminal close. `denied` maps to on-chain outcome 3; `cache_hit` maps to outcome 0 with the separate cache-hit flag. The 50-step test checks ordering, counts, idempotency, retry and the close barrier through a chain-port fake. An actual validator run still requires a built/deployed A5 program and funded local accounts.
 
-The queue is in memory. Run one service instance per session; restarting loses queued events. Persisting the queue or reconstructing it from the chain is needed before a durable deployment.
+The Python `looprail.http_ledger.HttpLedgerAdapter` calls this API, confirms the close count, and retries identical failed steps reported by the service. The queue is in memory. Run one service instance per session; restarting loses queued events. Persisting the queue or reconstructing it from the chain is needed before a durable deployment.

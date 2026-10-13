@@ -24,12 +24,14 @@ ps: ## show stack status
 shell: ## open a shell in the dev image (repo mounted at /workspace)
 	$(COMPOSE) run --rm tools bash
 
-test: ## validate contracts and ledger service behavior
+test: ## validate contracts, runtime and ledger service behavior
 	python3 infra/scripts/validate_contracts.py
+	python3 -m unittest discover -s apps/runtime/tests -v
 	node --experimental-strip-types --test apps/ledger/test/ledger.test.ts
 
 lint: ## JSON validity + python syntax
 	python3 -m compileall -q infra/scripts
+	python3 -m compileall -q apps/runtime/looprail apps/dashboard/server.py
 	@for f in packages/contracts/*.schema.json packages/contracts/examples/*.json; do \
 		python3 -c "import json,sys; json.load(open('$$f'))" || exit 1; \
 	done

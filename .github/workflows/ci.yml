@@ -13,6 +13,6 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install tools
-        run: pip install jsonschema
+        run: pip install -e apps/runtime
       - name: Lint + test
         run: make ci

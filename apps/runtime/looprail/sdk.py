@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import secrets
 from dataclasses import dataclass
 from pathlib import Path
 from threading import Event
@@ -60,8 +61,8 @@ class RunResult:
 class LoopRail:
     """Start a policy-gated agent session with swappable adapters.
 
-    The local and replay modes use virtual payment accounting. Real settlement
-    requires the A6/A7 adapters and receipt reconciliation.
+    Local and replay modes use virtual payment accounting. Inject both real
+    adapters and a real tool registry for a live run.
     """
 
     def __init__(
@@ -72,8 +73,8 @@ class LoopRail:
             raise ValueError("Only local and Solana devnet are allowed")
         if type(budget) is not int or budget < 0:
             raise ValueError("budget must be integer USDC base units")
-        if state != "memory" or payment != "mock":
-            raise NotImplementedError("Real state and payments require A6/A7 adapters")
+        if state not in {"memory", "ledger"} or payment not in {"mock", "mpp"}:
+            raise ValueError("state must be memory or ledger; payment must be mock or mpp")
         self.network = network
         self.budget = budget
         self.state = state
@@ -91,6 +92,7 @@ class LoopRail:
         wall_delay_ms: int = 0,
         payment_adapter: PaymentAdapter | None = None,
         ledger_adapter: LedgerAdapter | None = None,
+        session_id: str | None = None,
     ) -> RunResult:
         chosen_policy = policy if isinstance(policy, Policy) else Policy.from_dict(policy)
         if chosen_policy.budget_usdc_base_units > self.budget:
@@ -98,14 +100,19 @@ class LoopRail:
         chosen_agent = agent or MarketIntelligenceAgent()
         if tools is not None and replay_path is not None:
             raise ValueError("Choose tools or replay_path, not both")
+        live = payment_adapter is not None or ledger_adapter is not None or self.state == "ledger" or self.payment == "mpp"
+        if live and (payment_adapter is None or ledger_adapter is None or tools is None or replay_path is not None):
+            raise ValueError("Live mode requires both real adapters and a tool registry; replay is separate")
+        if live and (isinstance(payment_adapter, MockPaymentAdapter) or isinstance(ledger_adapter, MockLedger)):
+            raise ValueError("Live mode cannot use mock adapters")
         registry = tools or (replay_registry(replay_path) if replay_path else mock_registry(seed=seed))
-        mode = "replay" if replay_path else "mock"
+        mode = "live" if live else ("replay" if replay_path else "mock")
         engine = ExecutionEngine(
             chosen_policy,
             registry,
             payment=payment_adapter or MockPaymentAdapter(),
             ledger=ledger_adapter or MockLedger(),
-            session_id=f"{mode}-50",
+            session_id=session_id or (secrets.token_hex(32) if live else f"{mode}-50"),
             mode=mode,
             event_sink=event_sink,
             telemetry_sink=telemetry_sink,
@@ -114,8 +121,11 @@ class LoopRail:
         )
         try:
             data = await engine.run(chosen_agent)
-        except NotImplementedError as error:
-            raise SettlementFailed(str(error)) from error
+        except (RuntimeError, OSError, ValueError) as error:
+            if not live:
+                raise
+            details = "; ".join(getattr(error, "__notes__", ()))
+            raise SettlementFailed(f"{error}; {details}" if details else str(error)) from error
         return RunResult(**data)
 
     def run(self, **kwargs: Any) -> RunResult:

@@ -20,7 +20,7 @@
     "usdc_reserved_base_units": { "type": "integer", "minimum": 0 },
     "usdc_spent_base_units": { "type": "integer", "minimum": 0 },
     "usdc_refunded_base_units": { "type": "integer", "minimum": 0 },
-    "onchain_transactions": { "type": "integer", "minimum": 0 },
+    "onchain_transactions": { "type": ["integer", "null"], "minimum": 0 },
     "settlements": { "type": "integer", "minimum": 0 },
     "retry_count": { "type": "integer", "minimum": 0 },
     "source": { "enum": ["simulation", "ledger_and_receipts"] }

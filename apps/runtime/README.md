@@ -34,7 +34,26 @@ print(result.report["recommendation"], result.metrics["usdc_spent_base_units"])
 
 Run the example from the repository root after installing the package. Money values use integer USDC base units. The SDK also accepts a custom agent and `ToolRegistry`, `event_sink`, and `stop_event`. `run_async` is available inside an event loop. Typed SDK errors include `BudgetExceeded`, `PolicyDenied`, `KillSwitchTripped`, and `SettlementFailed`.
 
-The TypeScript A6 ledger service and the A7 MPP payment adapter are available separately. Running them together through the public SDK, receipt-derived metrics, and owned paid providers remain B6/A9 integration work. The SDK still rejects unsupported real-metrics runs.
+The SDK now accepts both A6 and A7 adapters in the same run. A live run requires a real `ToolRegistry`; the deterministic mock and replay providers remain simulation only. `HttpLedgerAdapter` submits ordered StepRecords to A6 and checks its confirmed count at close. The runtime reconciles the MPP receipts against the policy tracker and ledger events. `onchain_transactions` stays `null` until the A10 RPC transaction counter exists; it is not inferred from ER signatures. The A9 owned provider server now exists in `apps/providers`, but its three providers are not yet wired into a 50-step agent run. A5 still needs a base/ER validator run.
+
+To construct the ledger client, use the same owner, authority, provider addresses, and allocations configured in the A5/A6 deployment:
+
+```python
+from looprail.http_ledger import HttpLedgerAdapter
+
+ledger = HttpLedgerAdapter(
+    "http://127.0.0.1:8787", owner="<base58 owner>", authority="<base58 authority>",
+    budget_usdc_base_units=policy.budget_usdc_base_units,
+    tools=["market_data", "news_search", "inference", "coordination"],
+    provider_pubkeys={"market_data": "<base58>", "news": "<base58>",
+                      "inference": "<base58>", "internal": "<base58>"},
+    provider_allocations_usdc_base_units=policy.allocations,
+)
+result = rail.run(policy=policy, tools=real_tools,
+                  payment_adapter=payment, ledger_adapter=ledger)
+```
+
+`real_tools` must invoke actual providers and return measured costs and latency; `payment` is an `MppSessionAdapter` configured with funded local/devnet credentials and matching provider session URLs. Session IDs are generated as 32-byte hex for A6. If the payment commit outcome is uncertain, the runtime stops before another provider call and raises `SettlementFailed` with the reservation ID. Reconcile that delivery with the provider before trying to close the channel; the runtime cannot safely guess whether an unacknowledged voucher was accepted.
 
 ## MPP payment adapter (A7)
 
@@ -54,6 +73,6 @@ payment.commit(hold, 1_250)
 print(payment.close_all())
 ```
 
-By default, `close_all` requires the close receipt's `tx_hash` settlement signature and checks its status on the base-layer RPC. `allow_wire_only=True` is available for the A3 wire-level spike and returns `simulated=True`, `settlements=0`, `signature=None`. Pay-kit 0.10.0 has no remote release route; a failed commit must be retried before its reservation can be released. A funded Surfpool sandbox run with two vouchers and one confirmed settlement is documented in `spikes/a3-mpp-session/README.md`. Other deployments require a provider server with RPC, operator signer, the payment-channels program, and funded USDC.
+By default, `close_all` requires the close receipt's `tx_hash` settlement signature and checks its status on the base-layer RPC. `allow_wire_only=True` is available for the A3 wire-level spike and returns `simulated=True`, `settlements=0`, `signature=None`. Pay-kit 0.10.0 has no remote release route; a failed commit may leave a pending voucher that requires reconciliation. A funded Surfpool sandbox run with two vouchers and one confirmed settlement is documented in `spikes/a3-mpp-session/README.md`. Other deployments require a provider server with RPC, operator signer, the payment-channels program, and funded USDC.
 
 The one-off x402 `upto` fallback is still server-side only: pay-kit's high-level client does not automatically pay `upto`. The MPP adapter is the primary A7 payment path.
