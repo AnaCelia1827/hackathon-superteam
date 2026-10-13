@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "budget_usdc_base_units": 5000000,
+  "max_steps": 50,
+  "max_retries_per_step": 2,
+  "max_error_rate": 0.3,
+  "kill_switch_budget_ratio": 0.9,
+  "provider_limits": {
+    "market_data": {
+      "allocation_usdc_base_units": 1000000,
+      "max_price_per_call_usdc_base_units": 1000,
+      "cache_ttl_seconds": 30
+    },
+    "inference": {
+      "allocation_usdc_base_units": 2000000,
+      "max_price_per_call_usdc_base_units": 2000,
+      "cache_ttl_seconds": 0
+    },
+    "news": {
+      "allocation_usdc_base_units": 1000000,
+      "max_price_per_call_usdc_base_units": 800,
+      "cache_ttl_seconds": 30
+    },
+    "internal": {
+      "allocation_usdc_base_units": 0,
+      "max_price_per_call_usdc_base_units": 0,
+      "cache_ttl_seconds": 0
+    }
+  }
+}
