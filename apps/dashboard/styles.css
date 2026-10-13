@@ -35,6 +35,8 @@ h1 { margin: 0; font-size: clamp(30px, 3.4vw, 48px); line-height: 1.13; letter-s
 button { padding: 10px 13px; border: 1px solid #e1e5de; border-radius: 9px; background: #f5f7f3; color: #879087; font-size: 12px; font-weight: 700; cursor: not-allowed; white-space: nowrap; }
 button:not(:disabled) { border-color: #a5d777; background: #edffd9; color: #416c17; cursor: pointer; }
 button:not(:disabled):hover { background: #ddfac0; }
+.demo-link { display: inline-flex; align-items: center; padding: 10px 13px; border: 1px solid #a5d777; border-radius: 9px; background: #edffd9; color: #416c17; font-size: 12px; font-weight: 700; white-space: nowrap; text-decoration: none; }
+.demo-link:hover { background: #ddfac0; }
 .budget-state { display: flex; flex-wrap: wrap; gap: 12px 25px; margin-top: 15px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 10px; color: var(--muted); font-size: 12px; }
 .budget-state span { display: flex; gap: 7px; }
 .budget-state strong { color: #467522; }

@@ -111,6 +111,17 @@ class Handler(SimpleHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == "/api/state":
             self._json(200, session.snapshot())
+        elif path == "/demo.mp4":
+            video = ROOT / "docs" / "demo" / "looprail-demo-en.mp4"
+            if not video.is_file():
+                self.send_error(404, "Demo video not recorded yet")
+                return
+            self.send_response(200)
+            self.send_header("Content-Type", "video/mp4")
+            self.send_header("Content-Length", str(video.stat().st_size))
+            self.end_headers()
+            with video.open("rb") as source:
+                self.wfile.write(source.read())
         elif path == "/api/events":
             self._stream()
         elif path.startswith("/api/"):

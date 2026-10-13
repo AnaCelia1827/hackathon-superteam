@@ -42,7 +42,7 @@ settlement: 0.060 USDC deposited, 0.002 spent, and 0.058 refunded.
 
 ## English video
 
-`looprail-demo-en.mp4` presents the problem, replay, metrics, sandbox payment,
+The [English demo video](looprail-demo-en.mp4) presents the problem, replay, metrics, sandbox payment,
 and proposed business model. The agent replay and payment are separate runs.
 To record again on Windows, start `apps/dashboard/server.py` at port 8000 and
 run `docs/demo/record_demo.py` with Playwright and imageio-ffmpeg installed.

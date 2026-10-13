@@ -26,6 +26,8 @@ python -m venv .venv
 
 Open <http://127.0.0.1:8000>, then choose **Run simulation** or **Run replay**.
 The complete demo procedure is in [docs/demo/README.md](docs/demo/README.md).
+The static dashboard is published at
+[GitHub Pages](https://anacelia1827.github.io/hackathon-superteam/).
 
 ## Requirements
 

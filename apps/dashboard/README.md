@@ -12,6 +12,8 @@ Open `http://127.0.0.1:8000`. Click **Run simulation** or **Run replay** to watc
 
 Click **View on-chain run** to inspect the saved Surfpool sandbox settlement from the A7 MPP smoke run. It shows two vouchers (1,250 + 750 USDC base units), 60,000 deposited, 2,000 spent, 58,000 refunded, and the finalized transaction signature. This is a recorded on-chain run; the dashboard does not start a new paid session from this button. Its latency is shown as unavailable because the smoke run did not measure provider latency.
 
+The [GitHub Pages dashboard](https://anacelia1827.github.io/hackathon-superteam/) serves the saved simulation and sandbox settlement as a static site. Live Run simulation/replay and End session controls require the local Python server. **Watch demo** opens the English narrated MP4.
+
 Use the header button to switch between light and dark mode. The browser remembers the selected theme.
 
 The simulation and replay views remain virtual. A live agent session wired through A6/A7, continuous receipt updates, and new paid providers are still B6/A9 work.
