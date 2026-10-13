@@ -32,7 +32,7 @@ non-Python client. Pure TypeScript (option 2) is rejected: no TS session server 
 ## Consequences
 
 - `apps/runtime` (Person B) and the payment integration (Person A) use Python for the pay-kit
-  session; `apps/ledger-service` uses TypeScript for Anchor/MagicBlock.
+  session; `apps/ledger` uses TypeScript for Anchor/MagicBlock.
 - The A7 `PaymentAdapter` must call the pay-kit Python session server/client surface directly
   (`Session` method, `session_routes`, `ActiveSession`/`SessionConsumer`), not the high-level
   `PayKitClient` (which lacks `upto` auto-pay).
