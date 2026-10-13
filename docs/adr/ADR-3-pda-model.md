@@ -1,7 +1,7 @@
 # ADR-3: `Session` PDA model
 
-- **Status:** Accepted (implementation in A5; constants re-verified in A1)
-- **Date:** 2026-10-12
+- **Status:** Accepted (implementation in A5; constants + economics re-verified in A1)
+- **Date:** 2026-10-13 (A1 measured)
 - **Owner:** Pessoa A
 
 ## Context
@@ -65,6 +65,23 @@ Do not call commits "free". At undelegation the Delegation Program charges
 PDA balances), refunding the remainder to the **`rent_payer` stored at delegation time**. So a session
 with 2 checkpoints + 1 final commit costs ~`5_000_000` lamports cleanup (~0.005 SOL) plus base tx fees,
 independent of how many `record_step` calls ran.
+
+## Measured latencies (spike A1, `spikes/a1-er-counter`, 2026-10-13)
+
+Public counter program, `count=110` steps, ER vs base:
+
+| Path | p50 |
+| --- | --- |
+| ER `record_step` equivalent (delegated write) | **~44 ms** |
+| Base-layer tx | **~417 ms** |
+| ER `checkpoint` (commit) | **~13 ms** |
+| `commit_and_undelegate` (terminal) | **~29.5 s** |
+
+- The ~9.4x ER-vs-base speedup is the product thesis; only the terminal undelegation is slow (ER
+  committor finalization), so sessions must batch it into <= 1 terminal commit.
+- **Duplicate-tx trap:** identical instructions collide on the ER (same blockhash/message) and the
+  second is dropped. `record_step` must carry a strictly monotonic `step_idx` (already the rule above)
+  or a unique seed; this was the A1 bug fixed before the clean run.
 
 ## Consequences
 

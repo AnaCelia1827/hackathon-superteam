@@ -1,7 +1,7 @@
 # ADR-2: Payment channel topology
 
-- **Status:** Proposed — decide at gate A4
-- **Date:** 2026-10-12
+- **Status:** Accepted — option 1 (one channel per provider)
+- **Date:** 2026-10-13 (confirmed at gate A4)
 - **Owners:** Pessoa A + Pessoa B
 
 ## Context
