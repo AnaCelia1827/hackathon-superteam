@@ -24,13 +24,20 @@ pub mod public_counter {
 
     /// Increment the counter. In the spike this stands in for `record_step`:
     /// it is an ordinary ER transaction, NOT a commit.
-    pub fn increment(ctx: Context<Increment>) -> Result<()> {
+    ///
+    /// `seed` is unused on-chain; it exists so consecutive ER transactions differ.
+    /// ER txs land ~3ms apart, so identical instructions sharing a recent blockhash
+    /// produce the same signature and the validator rejects the repeat as
+    /// "already been processed".
+    pub fn increment(ctx: Context<Increment>, seed: u64) -> Result<()> {
         let counter = &mut ctx.accounts.counter;
         counter.count += 1;
-        if counter.count > 1_000_000 {
-            counter.count = 0;
-        }
-        msg!("PDA {} count: {}", counter.key(), counter.count);
+        msg!(
+            "PDA {} count: {} seed: {}",
+            counter.key(),
+            counter.count,
+            seed
+        );
         Ok(())
     }
 
