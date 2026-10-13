@@ -33,6 +33,11 @@ h1 { margin: 0; font-size: clamp(30px, 3.4vw, 48px); line-height: 1.13; letter-s
 .status { display: inline-flex; align-items: center; padding: 10px 12px; border: 1px solid #d8efbe; border-radius: 9px; background: #f5ffeb; color: #4a7e20; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .status-dot { width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: #7dc42a; }
 button { padding: 10px 13px; border: 1px solid #e1e5de; border-radius: 9px; background: #f5f7f3; color: #879087; font-size: 12px; font-weight: 700; cursor: not-allowed; white-space: nowrap; }
+button:not(:disabled) { border-color: #a5d777; background: #edffd9; color: #416c17; cursor: pointer; }
+button:not(:disabled):hover { background: #ddfac0; }
+.budget-state { display: flex; flex-wrap: wrap; gap: 12px 25px; margin-top: 15px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 10px; color: var(--muted); font-size: 12px; }
+.budget-state span { display: flex; gap: 7px; }
+.budget-state strong { color: #467522; }
 .notice { display: flex; align-items: baseline; flex-wrap: wrap; gap: 5px 12px; margin-top: 31px; padding: 14px 17px; border: 1px solid #e6ecd8; border-radius: 11px; background: #f9fcef; font-size: 12px; line-height: 1.5; }
 .notice strong { color: #4b701d; }
 .notice span { color: #738065; }
@@ -116,6 +121,7 @@ html[data-theme="dark"] button:disabled { border-color: #34413a; background: #23
 html[data-theme="dark"] .notice { border-color: #425538; background: #263124; }
 html[data-theme="dark"] .notice strong { color: #c8eea3; }
 html[data-theme="dark"] .notice span { color: #b1c0a4; }
+html[data-theme="dark"] .budget-state strong { color: #b5ff35; }
 html[data-theme="dark"] .metric, html[data-theme="dark"] .panel { border-color: var(--border); background: #182126; box-shadow: none; }
 html[data-theme="dark"] .metric > span:first-child, html[data-theme="dark"] .provider-meta, html[data-theme="dark"] td, html[data-theme="dark"] dd { color: #d3dfd4; }
 html[data-theme="dark"] .metric small, html[data-theme="dark"] .panel-heading p, html[data-theme="dark"] dt, html[data-theme="dark"] .table-pagination { color: #a3b2a7; }
