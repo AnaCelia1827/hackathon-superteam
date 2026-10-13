@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import argparse
 import json
 import sys
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -177,5 +178,9 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    print("LoopRail dashboard: http://127.0.0.1:8000")
-    ThreadingHTTPServer(("127.0.0.1", 8000), Handler).serve_forever()
+    parser = argparse.ArgumentParser(description="Serve the local LoopRail dashboard")
+    parser.add_argument("--host", default="127.0.0.1", help="Interface to listen on (use 0.0.0.0 for LAN access)")
+    parser.add_argument("--port", type=int, default=8000)
+    args = parser.parse_args()
+    print(f"LoopRail dashboard listening on {args.host}:{args.port}", flush=True)
+    ThreadingHTTPServer((args.host, args.port), Handler).serve_forever()

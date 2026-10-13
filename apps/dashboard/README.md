@@ -10,6 +10,15 @@ cd apps/runtime
 
 Open `http://127.0.0.1:8000`. Click **Run simulation** or **Run replay** to watch the steps arrive. **End session** aborts at the next batch boundary and closes the virtual channels. The step timeline shows 10 entries per page. Policy reasons appear on hover over outcome badges. Running `python -m http.server 8000` still shows the saved static fixture, with session controls disabled.
 
+To open the interactive dashboard from another computer on the same Wi-Fi, run:
+
+```powershell
+cd apps/runtime
+.\.venv\Scripts\python.exe ../dashboard/server.py --host 0.0.0.0 --port 8001
+```
+
+Open `http://<this-computer's-IPv4>:8001` on the other computer and keep the server running. The default `127.0.0.1:8000` binding stays local to this computer. If the other computer cannot connect, allow Python through the Windows firewall on private networks and check whether the Wi-Fi blocks communication between clients.
+
 Use the header button to switch between light and dark mode. The browser remembers the selected theme.
 
 Real authorization, reserved balance, explorer links, and settlement signatures require A6/A7. The dashboard currently labels all amounts as simulated and shows zero on-chain settlements.
