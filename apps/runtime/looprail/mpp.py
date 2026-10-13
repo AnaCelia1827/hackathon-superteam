@@ -176,13 +176,16 @@ class MppSessionAdapter:
         from solana_pay_kit.protocols.mpp.client.session import serialize_session_credential
         from solana_pay_kit.protocols.mpp.core.headers import parse_www_authenticate
         from solana_pay_kit.protocols.mpp.intents.session import SessionRequest
+        from solana_pay_kit._paycore.mints import resolve_stablecoin_mint
 
         status, headers, raw = _http("GET", state.url, timeout=self._timeout)
         if status != 402:
             raise RuntimeError(f"MPP challenge failed: HTTP {status}: {_body(raw)}")
         challenge = parse_www_authenticate(headers.get("www-authenticate", ""))
         request = SessionRequest.from_dict(challenge.decode_request())
-        if request.currency != "USDC" or request.method_details.network not in {"localnet", "devnet", "solana_localnet", "solana_devnet"}:
+        network = request.method_details.network
+        usdc_mint = resolve_stablecoin_mint("USDC", network)
+        if request.currency not in {"USDC", usdc_mint} or network not in {"localnet", "devnet", "solana_localnet", "solana_devnet"}:
             raise ValueError("Only Solana localnet/devnet USDC sessions are supported")
         opener = create_payment_channel_session_opener(
             request, self._payer, Keypair(),
@@ -249,10 +252,12 @@ class MppSessionAdapter:
         if status != 200:
             raise RuntimeError(f"MPP close failed: HTTP {status}: {_body(raw)}")
         response = _body(raw)
-        reference = str(response.get("settledSignature") or response.get("reference") or "")
-        if not reference and headers.get("payment-receipt"):
-            reference = parse_receipt(headers["payment-receipt"]).reference
-        signature = reference if reference and reference != channel_id else None
+        signature = str(response.get("settledSignature") or "") or None
+        if headers.get("payment-receipt"):
+            receipt = parse_receipt(headers["payment-receipt"])
+            if receipt.reference != channel_id or int(receipt.accepted_cumulative) != state.spent:
+                raise RuntimeError("MPP close receipt does not match the channel and voucher sum")
+            signature = receipt.tx_hash or signature
         if signature is None and not self._allow_wire_only:
             raise RuntimeError(f"Channel {channel_id} closed without an on-chain settlement signature")
         if signature is not None:

@@ -1,19 +1,14 @@
-"""A3 spike: MPP `session` server (wire-level).
-
-Mirrors the pay-kit harness `_build_session` path: a Session method + the
-reserve/commit side-channel routes. Wire-level only (`rpc=None`, accept-all tx
-verifiers) because the Surfpool sandbox runs no `payment-channels` program, so
-settle-at-close stays off and the close `reference` is a state-flip signature
-(null on-chain). See README "Findings".
-"""
+"""A3 MPP session server for wire-only or funded Surfpool sandbox smoke runs."""
 from __future__ import annotations
 
 import asyncio
 import json
+import os
 import sys
 import threading
 import urllib.request
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from types import SimpleNamespace
 from typing import Any
 
 from solana_pay_kit import Signer
@@ -27,11 +22,25 @@ from solana_pay_kit.protocols.mpp.server import (
     SessionServer,
     session_routes,
 )
+from solana_pay_kit.protocols.mpp.server.session_method import SessionOptions, new_session
+from solana_pay_kit._paycore.rpc import SolanaRpc
+from solders.pubkey import Pubkey
 
 RPC_URL = "https://402.surfnet.dev:8899"
 AMOUNT = 1000  # base units per delivery ($0.001)
 DEPOSIT = AMOUNT * 60  # covers 50 deliveries + headroom
 RESOURCE_PATH = "/session"
+
+
+class SessionRpc(SolanaRpc):
+    """Bridge pay-kit's tuple account response to its session verifier shape."""
+
+    async def get_account_info(self, address: str | Pubkey, commitment: str = "confirmed"):
+        account = await super().get_account_info(str(address), commitment)
+        if account is None:
+            return SimpleNamespace(value=None)
+        data, owner = account
+        return SimpleNamespace(value=SimpleNamespace(data=data, owner=Pubkey.from_string(owner)))
 
 
 def _fetch_recent_state_sync() -> tuple[str | None, int | None]:
@@ -47,9 +56,37 @@ def _fetch_recent_state_sync() -> tuple[str | None, int | None]:
         return None, None
 
 
+def _blockhash_cache() -> tuple[str, int] | None:
+    blockhash, slot = _fetch_recent_state_sync()
+    if blockhash is None or slot is None:
+        return None
+    # Hosted Surfpool's blockhash context can be ahead of getSlot.
+    return blockhash, max(0, slot - 2)
+
+
 def build_adapter() -> tuple[Session, Any]:
     operator = Signer.demo()
     operator_pub = operator.pubkey()
+    if os.environ.get("LOOPRAIL_MPP_ONCHAIN") == "1":
+        method = new_session(SessionOptions(
+            operator=operator_pub,
+            recipient=operator_pub,
+            amount=AMOUNT,
+            currency="USDC",
+            decimals=6,
+            network="localnet",
+            secret_key="a3-mpp-session-secret-key-32-bytes-padding!",
+            realm="A3 spike",
+            channel_program=PAYMENT_CHANNELS_PROGRAM_ID,
+            suggested_deposit=DEPOSIT,
+            grace_period_seconds=900,
+            voucher_signer="client",
+            idle_timeout_seconds=300,
+            rpc=SessionRpc(RPC_URL),
+            signer=operator,
+        ))
+        core = method.core().with_blockhash_cache(_blockhash_cache)
+        return method, session_routes(core)
     config = SessionConfig(
         operator=operator_pub,
         recipient=operator_pub,
@@ -69,12 +106,6 @@ def build_adapter() -> tuple[Session, Any]:
 
     config.verify_open_tx = _accept_wire_only
     config.verify_top_up_tx = _accept_wire_only
-
-    def _blockhash_cache() -> tuple[str, int] | None:
-        blockhash, slot = _fetch_recent_state_sync()
-        if blockhash is None or slot is None:
-            return None
-        return blockhash, slot
 
     def _current_slot() -> int:
         _, slot = _fetch_recent_state_sync()
@@ -122,7 +153,9 @@ class Handler(BaseHTTPRequestHandler):
             self._send(404, {"error": "not_found"})
             return
         auth = self.headers.get("authorization", "")
-        result = asyncio.run(self.server.method.handle(auth or None, self.server.challenge))
+        result = asyncio.run_coroutine_threadsafe(
+            self.server.method.handle(auth or None, self.server.challenge), self.server.loop
+        ).result()
         if not result.ok:
             self._send(result.status, result.body or {"error": "payment_required"}, result.headers)
             return
@@ -131,12 +164,14 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802
         raw = self.rfile.read(int(self.headers.get("content-length", "0") or "0")) or b"{}"
         if self.path == "/__402/session/deliveries":
-            r = asyncio.run(self.server.routes.deliveries("POST", raw))
+            r = asyncio.run_coroutine_threadsafe(self.server.routes.deliveries("POST", raw), self.server.loop).result()
         elif self.path == "/__402/session/commit":
-            r = asyncio.run(self.server.routes.commit("POST", raw))
+            r = asyncio.run_coroutine_threadsafe(self.server.routes.commit("POST", raw), self.server.loop).result()
         elif self.path == "/__402/session/close":
             auth = self.headers.get("authorization", "")
-            result = asyncio.run(self.server.method.handle(auth or None, self.server.challenge))
+            result = asyncio.run_coroutine_threadsafe(
+                self.server.method.handle(auth or None, self.server.challenge), self.server.loop
+            ).result()
             if not result.ok:
                 self._send(result.status, result.body or {"error": "payment_required"}, result.headers)
                 return
@@ -153,15 +188,20 @@ class Handler(BaseHTTPRequestHandler):
 def main() -> None:
     method, routes = build_adapter()
     server = HTTPServer(("127.0.0.1", 8001), Handler)
+    loop = asyncio.new_event_loop()
+    server.loop = loop
+    threading.Thread(target=loop.run_forever, daemon=True).start()
     server.method = method
     server.routes = routes
     server.challenge = SessionChallengeOptions(amount=str(AMOUNT), description="A3 session")
-    print(f"session server on 127.0.0.1:8001 (wire-level)", flush=True)
+    mode = "on-chain sandbox" if os.environ.get("LOOPRAIL_MPP_ONCHAIN") == "1" else "wire-level"
+    print(f"session server on 127.0.0.1:8001 ({mode})", flush=True)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
         threading.Event().wait()
     except KeyboardInterrupt:
         server.shutdown()
+        loop.call_soon_threadsafe(loop.stop)
 
 
 if __name__ == "__main__":

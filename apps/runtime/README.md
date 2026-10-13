@@ -54,6 +54,6 @@ payment.commit(hold, 1_250)
 print(payment.close_all())
 ```
 
-By default, `close_all` requires a settlement signature and checks its status on the base-layer RPC. `allow_wire_only=True` is available for the A3 wire-level spike and returns `simulated=True`, `settlements=0`, `signature=None`. Pay-kit 0.10.0 has no remote release route; a failed commit must be retried before its reservation can be released. Real settlement requires a provider server with RPC, operator signer, the payment-channels program, and funded USDC.
+By default, `close_all` requires the close receipt's `tx_hash` settlement signature and checks its status on the base-layer RPC. `allow_wire_only=True` is available for the A3 wire-level spike and returns `simulated=True`, `settlements=0`, `signature=None`. Pay-kit 0.10.0 has no remote release route; a failed commit must be retried before its reservation can be released. A funded Surfpool sandbox run with two vouchers and one confirmed settlement is documented in `spikes/a3-mpp-session/README.md`. Other deployments require a provider server with RPC, operator signer, the payment-channels program, and funded USDC.
 
 The one-off x402 `upto` fallback is still server-side only: pay-kit's high-level client does not automatically pay `upto`. The MPP adapter is the primary A7 payment path.
