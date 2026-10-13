@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://looprail.local/contracts/v1/step-record.schema.json",
+  "title": "LoopRail StepRecord v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "session_id", "step_index", "tool", "provider", "outcome", "cost_usdc_base_units", "provider_latency_ms", "looprail_overhead_ms", "cache_hit", "occurred_at"],
+  "properties": {
+    "version": { "const": 1 },
+    "session_id": { "type": "string", "minLength": 1 },
+    "step_index": { "type": "integer", "minimum": 0 },
+    "tool": { "type": "string", "minLength": 1 },
+    "provider": { "type": "string", "minLength": 1 },
+    "outcome": { "enum": ["success", "error", "denied", "cache_hit"] },
+    "reason": { "type": "string" },
+    "cost_usdc_base_units": { "type": "integer", "minimum": 0 },
+    "provider_latency_ms": { "type": "integer", "minimum": 0 },
+    "looprail_overhead_ms": { "type": ["integer", "null"], "minimum": 0 },
+    "cache_hit": { "type": "boolean" },
+    "retry_count": { "type": "integer", "minimum": 0 },
+    "retry_backoff_ms": { "type": "integer", "minimum": 0 },
+    "occurred_at": { "type": "string", "format": "date-time" }
+  }
+}

@@ -1,38 +1,18 @@
-# contracts
+# Shared contracts v1
 
-Shared JSON Schema contracts for LoopRail. **Define these together before integrating** (J1).
+JSON Schemas shared by the Python runtime, TypeScript ledger, payment adapters, and dashboard. Money is always integer USDC base units (6 decimals): `1 USDC = 1_000_000`.
 
-| Schema | Owner | Status |
-| --- | --- | --- |
-| `step_record.schema.json` | Pessoa A | v1 |
-| `payment_adapter.schema.json` | Pessoa A | v1 |
-| `policy.schema.json` | Pessoa B | pending |
-| `metrics.schema.json` | Pessoa B | pending |
+| Schema | Purpose |
+| --- | --- |
+| `policy.schema.json` | Runtime spending policy |
+| `step-record.schema.json` | Runtime event for each step |
+| `metrics.schema.json` | Session summary |
+| `payment-message.schema.json` | Runtime payment messages |
+| `step_record.schema.json` | Person A's ledger-facing StepRecord |
+| `payment_adapter.schema.json` | Person A's PaymentAdapter contract |
 
-## Conventions
+The two StepRecord and payment schema pairs currently use different naming and field conventions. Reconcile them together before B6 integrates the ledger and real payments. Keep the valid examples in `examples/` synchronized with the ledger-facing schemas.
 
-- **Money is always integer USDC base units (6 decimals)** in every schema and in the ledger.
-  `1 USDC = 1_000_000`. Never use floats. See `$defs.usdc_base_units`.
-- Schemas are versioned by path: `$id` = `https://looprail.local/schemas/v1/<name>.schema.json`.
-  Breaking changes bump `v1` -> `v2`; never edit a published schema in place.
-- `policy_hash` (packages/contracts `policy.schema.json`, Pessoa B) is the hash of the canonical
-  JSON per **RFC 8785**; the same canonicalization is used by `solana_pay_kit`. The 32-byte digest is
-  stored in the on-chain `Session` PDA.
-- Valid example per schema lives in `examples/`. Keep examples in sync when a schema changes.
+`policy_hash` is the SHA-256 digest of RFC 8785 canonical policy JSON. The planned on-chain Session PDA stores the 32-byte digest. Breaking contract changes require a new versioned schema rather than changing a published contract in place.
 
-## Validation
-
-`jsonschema`/`ajv` validation is wired into `make test` (see `infra/`, J2). Until then, validate a
-single example with any draft 2020-12 validator, e.g.:
-
-```bash
-python -c "import json,jsonschema as j; \
- j.validate(json.load(open('packages/contracts/examples/step_record.example.json')), \
-            json.load(open('packages/contracts/step_record.schema.json')))"
-```
-
-## On-chain mapping (A5)
-
-The Anchor `Session` PDA stores compact `u8` indices, not the string ids. `StepRecord.tool_idx` /
-`StepRecord.provider_idx` are the on-chain values; `tool_id` / `provider_id` are the registry handles
-the runtime resolves through the `ToolRegistry`.
+Run `make test` for the repository's contract validation and `python -m unittest discover -s apps/runtime/tests` after installing the runtime's Python dependencies.

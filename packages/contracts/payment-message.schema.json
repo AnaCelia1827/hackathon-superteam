@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://looprail.local/contracts/v1/payment-message.schema.json",
+  "title": "LoopRail PaymentAdapter message v1",
+  "description": "Command envelope between the runtime and payment adapter. Real responses and errors will be finalized with A7.",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "operation", "provider", "allocation_usdc_base_units"],
+      "properties": {
+        "version": { "const": 1 },
+        "operation": { "const": "open" },
+        "provider": { "type": "string", "minLength": 1 },
+        "allocation_usdc_base_units": { "type": "integer", "minimum": 0 }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "operation", "channel_id", "reservation_id", "amount_usdc_base_units"],
+      "properties": {
+        "version": { "const": 1 },
+        "operation": { "enum": ["reserve", "commit", "release"] },
+        "channel_id": { "type": "string", "minLength": 1 },
+        "reservation_id": { "type": "string", "minLength": 1 },
+        "amount_usdc_base_units": { "type": "integer", "minimum": 0 }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "operation", "session_id"],
+      "properties": {
+        "version": { "const": 1 },
+        "operation": { "const": "close_all" },
+        "session_id": { "type": "string", "minLength": 1 }
+      }
+    }
+  ]
+}

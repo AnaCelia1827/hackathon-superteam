@@ -1,21 +1,25 @@
 # LoopRail
 
-Estrutura inicial do monorepo. Os contratos em `packages/contracts/` devem ser definidos em conjunto antes das integrações.
+Monorepo for the LoopRail agent runtime, local dashboard, shared contracts, and planned Solana payment services.
 
-| Caminho | Responsável | Finalidade |
+| Path | Owner | Purpose |
 | --- | --- | --- |
-| `apps/dashboard/` | Pessoa B | Interface e métricas da demo |
-| `apps/runtime/` | Pessoa B | Loop do agente, policy e ferramentas |
-| `apps/ledger-service/` | Pessoa A | API de integração com MagicBlock |
-| `apps/providers/` | Pessoa A | APIs pagas usadas pela demo |
-| `packages/contracts/` | Ambos | Schemas e exemplos compartilhados |
-| `packages/sdk-python/` | Pessoa B | SDK público, sujeito à decisão de linguagem |
-| `programs/looprail-session/` | Pessoa A | Programa Anchor |
-| `scenarios/market-intelligence/` | Pessoa B | Fluxo do agente |
-| `scenarios/replay/` | Pessoa B | Respostas gravadas para a demo |
-| `benchmarks/` | Ambos | Runners e resultados medidos |
-| `docs/adr/` | Ambos | Decisões de arquitetura |
-| `docs/demo/` | Ambos | Roteiro e material da apresentação |
-| `infra/` | Pessoa A | Ambiente local e serviços de apoio |
+| `apps/dashboard/` | Person B | Demo interface and metrics |
+| `apps/runtime/` | Person B | Agent loop, policy, and tools |
+| `apps/ledger-service/` | Person A | MagicBlock integration API |
+| `apps/providers/` | Person A | Paid demo APIs |
+| `packages/contracts/` | Both | Shared schemas and examples |
+| `packages/sdk-python/` | Person B | SDK packaging notes; public API is installed from `apps/runtime` |
+| `programs/looprail-session/` | Person A | Anchor program |
+| `scenarios/market-intelligence/` | Person B | Agent scenario |
+| `scenarios/replay/` | Person B | Recorded responses for the demo |
+| `benchmarks/` | Both | Runners and measured results |
+| `docs/adr/` | Both | Architecture decisions |
+| `docs/demo/` | Both | Demo script and materials |
+| `infra/` | Person A | Local environment and support services |
 
-O PDF original da ideia está na raiz do repositório.
+The [implementation plan](looprail_implementation_plan.md) is in English. The original ideation PDF remains in Portuguese at the repository root.
+
+## Person B prototype
+
+The Python runtime executes a deterministic 50-step session in mock or replay mode. The local dashboard streams step and budget events over SSE and can abort a virtual session. See [apps/runtime/README.md](apps/runtime/README.md) and [apps/dashboard/README.md](apps/dashboard/README.md) for commands. The measured benchmark comparison is described in [benchmarks/README.md](benchmarks/README.md). On-chain integration and real payments depend on Person A's tasks.

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LoopRail — Dashboard</title>
+    <meta name="description" content="LoopRail agent execution dashboard" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="site-header">
+        <a class="brand" href="#overview"><img class="brand-logo" src="./assets/looprail-logo.png" alt="" /><span>Loop<span class="brand-accent">Rail</span></span></a>
+        <nav aria-label="Main navigation">
+          <a class="active" href="#overview">Dashboard</a>
+          <a href="#performance">Performance</a>
+          <a href="#providers">Providers</a>
+          <a href="#steps">Steps</a>
+        </nav>
+        <div class="header-profile">
+          <span class="environment-dot"></span><span class="environment-label">Local environment</span>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false">Dark mode</button>
+          <span class="avatar">L</span>
+        </div>
+      </header>
+      <main id="overview">
+        <header class="topbar">
+          <div>
+            <h1>Control at every step<span class="title-dot">.</span></h1>
+            <p>Track agent execution, latency, and spending in one view.</p>
+          </div>
+          <div class="header-actions">
+            <span class="status"><span class="status-dot"></span><span id="run-status">Local simulation</span></span>
+            <button id="start-session" type="button" disabled>Run simulation</button>
+            <button id="replay-session" type="button" disabled>Run replay</button>
+            <button id="end-session" type="button" disabled>End session</button>
+          </div>
+        </header>
+        <section class="notice" role="status">
+          <strong>Simulated data</strong>
+          <span>Costs and latencies come from a reproducible scenario. No USDC was authorized or settled on Solana.</span>
+        </section>
+        <section class="budget-state" aria-label="Budget accounting">
+          <span>Authorized <strong id="authorized">0 USDC</strong></span>
+          <span>Reserved <strong id="reserved">0 USDC</strong></span>
+          <span>Spent <strong id="live-spent">0 USDC</strong></span>
+          <span>Remaining <strong id="remaining">—</strong></span>
+        </section>
+        <section class="metrics-grid" aria-label="Key metrics">
+          <article class="metric"><span>Steps completed</span><strong id="step-count">—</strong><small>in one session</small></article>
+          <article class="metric"><span>Simulated spend</span><strong id="spent">—</strong><small>of <span id="budget">—</span> policy budget</small></article>
+          <article class="metric"><span>Total simulated latency</span><strong id="duration">—</strong><small>provider p95: <span id="p95">—</span></small></article>
+          <article class="metric"><span>On-chain settlements</span><strong id="settlements">—</strong><small>no channel opened in this simulation</small></article>
+        </section>
+        <div class="insights-grid">
+          <section class="panel chart-panel" id="performance">
+            <div class="panel-heading"><div><div class="eyebrow">PERFORMANCE</div><h2>Latency by step</h2><p>Provider time for each simulated call.</p></div><span class="pill">50 steps</span></div>
+            <div class="chart-wrap">
+              <div class="chart-scale"><span id="chart-max">—</span><span id="chart-mid">—</span><span>0 ms</span></div>
+              <svg viewBox="0 0 640 220" preserveAspectRatio="none" role="img" aria-label="Latency by step chart">
+                <line x1="0" y1="20" x2="640" y2="20" class="grid-line" />
+                <line x1="0" y1="110" x2="640" y2="110" class="grid-line" />
+                <line x1="0" y1="200" x2="640" y2="200" class="grid-line" />
+                <path id="latency-area" class="chart-area" d="" />
+                <path id="latency-line" class="chart-line" d="" />
+              </svg>
+            </div>
+            <div class="chart-axis"><span>Step 1</span><span>Step 25</span><span>Step 50</span></div>
+          </section>
+          <section class="highlight-panel" aria-label="Session budget">
+            <div class="eyebrow">SPEND POLICY ENGINE</div>
+            <div><h2>Spending<br />under control<span>.</span></h2><p>Reserve before each call. Record actual spend after the response.</p></div>
+            <div class="highlight-bottom">
+              <div><span>Used</span><strong id="budget-percent">—</strong></div>
+              <div class="budget-track"><div id="budget-fill"></div></div>
+              <small>of this session's configured limit</small>
+            </div>
+          </section>
+        </div>
+        <div class="content-grid">
+          <section class="panel" id="providers">
+            <div class="panel-heading"><div><h2>Spend by provider</h2><p>Totals calculated from step events.</p></div><span class="pill">USDC</span></div>
+            <div id="provider-bars" class="provider-bars"></div>
+          </section>
+          <section class="panel session-panel">
+            <div class="panel-heading"><div><h2>Session summary</h2><p>Data source and execution status.</p></div></div>
+            <dl>
+              <div><dt>Session ID</dt><dd id="session-id">—</dd></div>
+              <div><dt>Mode</dt><dd id="mode">—</dd></div>
+              <div><dt>Transactions</dt><dd id="transactions">—</dd></div>
+              <div><dt>Metrics source</dt><dd id="source">—</dd></div>
+            </dl>
+          </section>
+        </div>
+        <section class="panel steps-panel" id="steps">
+          <div class="panel-heading"><div><h2>Step timeline</h2><p>Policy decision, cost, and latency for every step.</p></div><span class="pill" id="step-total">— steps</span></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Step</th><th>Tool</th><th>Provider</th><th>Outcome</th><th>Policy reason</th><th>Cost</th><th>Latency</th></tr></thead>
+            <tbody id="step-rows"></tbody>
+          </table></div>
+          <div class="table-pagination" aria-label="Step pagination">
+            <span id="page-range">—</span>
+            <div class="pagination-actions">
+              <button id="page-prev" type="button" aria-label="Previous page">Previous</button>
+              <span id="page-current" aria-live="polite">Page 1 of 1</span>
+              <button id="page-next" type="button" aria-label="Next page">Next</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="./main.js"></script>
+  </body>
+</html>
