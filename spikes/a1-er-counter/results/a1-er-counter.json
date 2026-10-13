@@ -1,0 +1,47 @@
+{
+  "spike": "A1",
+  "generated_at": "2026-10-13T04:34:05.568Z",
+  "base_endpoint": "http://localhost:8899",
+  "er_endpoint": "http://localhost:7799",
+  "program_id": "DxWKP3UUHuyh326XZBTCb2qTabErJtm3C1xje9NeprzT",
+  "counter_pda": "GVwAt5cP1b6sLDSfXpPC9WsJG1hiXNjpdzU4FEEQsrf1",
+  "validator": "mAGicPQYBMvcYveUZA5F5UNNwyHvfYh5xkLS2Fr1mev",
+  "base_steps": 10,
+  "er_steps": 100,
+  "delegate_ms": 417.78131499999927,
+  "commit_ms": 16.978504000000612,
+  "commit_settle_ms": 517.4817109999985,
+  "commit_signature": "3n3zvtT4MfkSfE8TbapHZA5M79hswxUP5BRttp4mAfnJChumwnmGGMn7JUggkiNHP87FvQDgsDg7V76kwpcbgfXA",
+  "count_after_commit": 110,
+  "undelegate_ms": 29504.572611,
+  "undelegate_commitment": "confirmed",
+  "base_owner_reverted_ms": 2,
+  "base_owner_samples": [
+    [
+      2,
+      "DxWKP3UUHuyh326XZBTCb2qTabErJtm3C1xje9NeprzT"
+    ]
+  ],
+  "count_after_undelegate": 110,
+  "state_returned_to_base": true,
+  "count_matches_expected": true,
+  "expected_count": 110,
+  "undelegate_signature": "F9x1waTBBkJjvk67ksz9YsGE4Dwbdw9XBrkzggTCUxrU8YerCsTNXvcDoaf63W46SjRY61oWQ8s23uTyV1s5uqT",
+  "base_increment_stats": {
+    "n": 10,
+    "min": 404.67812600000025,
+    "p50": 417.48858500000006,
+    "p95": 430.6094239999993,
+    "max": 430.6094239999993,
+    "mean": 417.67
+  },
+  "er_increment_stats": {
+    "n": 100,
+    "min": 4.4759329999997135,
+    "p50": 44.49643300000025,
+    "p95": 48.02326600000015,
+    "max": 74.08787400000074,
+    "mean": 27.73
+  },
+  "speedup_p50": 9.38
+}

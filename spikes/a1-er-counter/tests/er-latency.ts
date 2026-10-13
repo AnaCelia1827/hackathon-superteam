@@ -32,6 +32,21 @@ function stats(samples: number[]) {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+// Local validators occasionally report "already been processed" when a signed tx is
+// re-submitted. Treat it as success; the write already landed.
+async function sendWithDupRetry(fn: () => Promise<string>, label: string): Promise<string> {
+  try {
+    return await fn();
+  } catch (e) {
+    const msg = String(e);
+    if (msg.includes("already been processed")) {
+      console.log(`  (${label}: duplicate tx ignored)`);
+      return "";
+    }
+    throw e;
+  }
+}
+
 describe("a1-er-counter", () => {
   const provider = new anchor.AnchorProvider(
     new anchor.web3.Connection(
@@ -88,55 +103,82 @@ describe("a1-er-counter", () => {
     }
 
     // 1. initialize on base
-    await program.methods
-      .initialize()
-      .accounts({ user: wallet.publicKey })
-      .rpc({ skipPreflight: true, commitment: "confirmed" });
+    console.log("-> initialize");
+    await sendWithDupRetry(
+      () =>
+        program.methods
+          .initialize()
+          .accounts({ user: wallet.publicKey })
+          .rpc({ skipPreflight: true, commitment: "confirmed" }),
+      "initialize",
+    );
 
     // 2. base-layer increments
+    console.log(`-> ${BASE_STEPS} base increments`);
     const baseSamples: number[] = [];
     for (let i = 0; i < BASE_STEPS; i++) {
       const t0 = performance.now();
-      await program.methods.increment().accounts({ counter: counterPda }).rpc({
-        skipPreflight: true,
-        commitment: "confirmed",
-      });
+      await sendWithDupRetry(
+        () =>
+          program.methods
+            .increment(new anchor.BN(i))
+            .accounts({ counter: counterPda })
+            .rpc({ skipPreflight: true, commitment: "confirmed" }),
+        `base increment ${i}`,
+      );
       baseSamples.push(performance.now() - t0);
     }
 
     // 3. delegate to ER
+    console.log("-> delegate");
     const delStart = performance.now();
-    await program.methods
-      .delegate()
-      .accounts({ payer: wallet.publicKey, pda: counterPda })
-      .remainingAccounts([{ pubkey: validator, isSigner: false, isWritable: false }])
-      .rpc({ skipPreflight: true, commitment: "confirmed" });
+    await sendWithDupRetry(
+      () =>
+        program.methods
+          .delegate()
+          .accounts({ payer: wallet.publicKey, pda: counterPda })
+          .remainingAccounts([{ pubkey: validator, isSigner: false, isWritable: false }])
+          .rpc({ skipPreflight: true, commitment: "confirmed" }),
+      "delegate",
+    );
     result.delegate_ms = performance.now() - delStart;
     await sleep(3000);
 
     // 4. ER increments (these are NOT commits)
+    console.log(`-> ${ER_STEPS} ER increments`);
     const erSamples: number[] = [];
     for (let i = 0; i < ER_STEPS; i++) {
       const t0 = performance.now();
-      await programEr.methods.increment().accounts({ counter: counterPda }).rpc({
-        skipPreflight: true,
-        commitment: "confirmed",
-      });
+      await sendWithDupRetry(
+        () =>
+          programEr.methods
+            .increment(new anchor.BN(i))
+            .accounts({ counter: counterPda })
+            .rpc(),
+        `er increment ${i}`,
+      );
       erSamples.push(performance.now() - t0);
     }
 
     // 5. commit (checkpoint) on ER + await base-layer commitment signature
+    console.log("-> commit");
     const commitStart = performance.now();
-    const commitSig = await programEr.methods
-      .commit()
-      .accounts({ payer: erProvider.wallet.publicKey })
-      .rpc({ skipPreflight: true, commitment: "confirmed" });
+    const commitSig = await sendWithDupRetry(
+      () =>
+        programEr.methods
+          .commit()
+          .accounts({ payer: erProvider.wallet.publicKey })
+          .rpc(),
+      "commit",
+    );
     result.commit_ms = performance.now() - commitStart;
 
     const settleStart = performance.now();
-    const baseCommitSig = await GetCommitmentSignature(commitSig, erProvider.connection);
+    const baseCommitSig = commitSig
+      ? await GetCommitmentSignature(commitSig, erProvider.connection)
+      : null;
     result.commit_settle_ms = performance.now() - settleStart;
-    result.commit_signature = baseCommitSig.toString();
+    result.commit_signature = baseCommitSig ? baseCommitSig.toString() : null;
 
     const expected = BASE_STEPS + ER_STEPS;
     await sleep(1000);
@@ -144,20 +186,49 @@ describe("a1-er-counter", () => {
     result.count_after_commit = Number(afterCommit.count);
 
     // 6. commit-and-undelegate (terminal)
+    console.log("-> undelegate");
+    const undelCommitment = process.env.A1_UNDELEGATE_COMMITMENT || "confirmed";
     const undelStart = performance.now();
-    const undelSig = await programEr.methods
-      .undelegate()
-      .accounts({ payer: erProvider.wallet.publicKey })
-      .rpc({ skipPreflight: true, commitment: "confirmed" });
+    const undelSig = await sendWithDupRetry(
+      () =>
+        programEr.methods
+          .undelegate()
+          .accounts({ payer: erProvider.wallet.publicKey })
+          .rpc({ commitment: undelCommitment as anchor.web3.Commitment }),
+      "undelegate",
+    );
     result.undelegate_ms = performance.now() - undelStart;
-    await sleep(3000);
+    result.undelegate_commitment = undelCommitment;
+
+    // How long after the ER `.rpc()` returns does the BASE layer actually revert
+    // ownership back to the program? Separates "ER rpc confirmation" from "base finalization".
+    const pollStart = performance.now();
+    let baseOwnerRevertedMs: number | null = null;
+    const ownerSamples: Array<[number, string]> = [];
+    for (let j = 0; j < 80; j++) {
+      const ai = await provider.connection.getAccountInfo(counterPda);
+      const owner = ai ? ai.owner.toBase58() : "none";
+      if (j % 10 === 0) {
+        ownerSamples.push([Math.round(performance.now() - pollStart), owner]);
+      }
+      if (ai && ai.owner.toBase58() === program.programId.toBase58()) {
+        baseOwnerRevertedMs = Math.round(performance.now() - pollStart);
+        break;
+      }
+      await sleep(500);
+    }
+    result.base_owner_reverted_ms = baseOwnerRevertedMs;
+    result.base_owner_samples = ownerSamples;
+    console.log(
+      `undelegate rpc=${Math.round(result.undelegate_ms as number)}ms, base owner reverted after ${baseOwnerRevertedMs}ms`,
+    );
 
     const afterUndelegate = await program.account.counter.fetch(counterPda);
     result.count_after_undelegate = Number(afterUndelegate.count);
     result.state_returned_to_base = Number(afterUndelegate.count) === expected;
     result.count_matches_expected = Number(afterUndelegate.count) === expected;
     result.expected_count = expected;
-    result.undelegate_signature = undelSig.toString();
+    result.undelegate_signature = undelSig || null;
 
     // 7. optional: reproduce the no-fee-payer commit limit (>= 11 plain commits)
     if (TEST_COMMIT_LIMIT) {

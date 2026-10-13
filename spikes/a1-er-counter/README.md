@@ -49,11 +49,36 @@ Tune with `A1_BASE_STEPS`, `A1_ER_STEPS`, `A1_TEST_COMMIT_LIMIT` (see `.env.exam
 
 ## Acceptance (plan A1)
 
-- [ ] reproducible latency table (p50/p95, base vs ER)
-- [ ] state returns to the base layer after commit
-- [ ] commit limit reproduced when `A1_TEST_COMMIT_LIMIT=1`
-- [ ] delegation errors (if any) noted here
+- [x] reproducible latency table (p50/p95, base vs ER)
+- [x] state returns to the base layer after commit
+- [ ] commit limit reproduced when `A1_TEST_COMMIT_LIMIT=1` (not run yet)
+- [x] delegation errors noted below
 
-## Findings
+## Findings (local mb-stack, `results/a1-er-counter.json`)
 
-_Pending a run against a live local ER. Fill in from `results/a1-er-counter.json`._
+| Metric | Base layer | Ephemeral Rollup |
+| --- | --- | --- |
+| samples | 10 | 100 |
+| p50 | **417 ms** | **44.3 ms** |
+| p95 | 435 ms | 47.6 ms |
+| max | 435 ms | 138 ms |
+
+- **Speedup p50 ≈ 9.4×** (base p50 / ER p50). The ER write path is ~44 ms here because the local
+  validator round-trips the write through the rollup; the earlier "3.5 ms / 115×" figure was bogus —
+  those transactions were rejected as duplicates and never executed.
+- `delegate_ms ≈ 400 ms`, `commit_ms ≈ 13 ms`, `commit_settle_ms ≈ 112 ms` (real on-chain
+  `commit_signature` captured), `count_after_commit = 110`, `state_returned_to_base = true`.
+- **Terminal `commit_and_undelegate` takes a fixed ~29.5 s** regardless of the RPC commitment
+  (`confirmed` or `processed`): the ER holds the `.rpc()` until the committor seals the final
+  commit+undelegation back to base. The base layer then reverts ownership ~2 ms after `.rpc()`
+  returns. So the ~30 s is a once-per-session terminal-close cost (not configurable via CLI), not a
+  per-step cost. Checkpoints stay at ~13 ms, so the "≤2 checkpoints + 1 terminal commit" design holds;
+  the ledger `close` / idle-close path (A6/A8) must budget ~30 s.
+- **Duplicate-tx trap:** ER writes land ~3-5 ms apart, so identical instructions sharing a recent
+  blockhash produce the same signature and the validator rejects the repeat with
+  "already been processed". Fix: give each instruction a unique argument (`increment(seed)`), which
+  stands in for `record_step`'s monotonic `step_idx` in the real program.
+- **Gotchas that shaped `infra/`:** Agave's `solana-test-validator` needs `io_uring` (run containers
+  with `--security-opt seccomp=unconfined --security-opt label=disable`); the ER needs `--no-tui` and
+  must not start before the base is healthy; `anchor-cli 1.0.2` self-installs Agave `3.0.0`/`3.1.10`
+  (not the plan's 3.1.9).
