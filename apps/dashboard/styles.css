@@ -85,6 +85,12 @@ tr:last-child td { border-bottom: 0; }
 .outcome { padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
 .outcome.success { background: #effadd; color: #528e19; }
 .outcome.error, .outcome.denied { background: #fff0e8; color: #b46a42; }
+.table-pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-top: 18px; color: #7b887d; font-size: 12px; }
+.pagination-actions { display: flex; align-items: center; gap: 11px; }
+.pagination-actions button { border-color: #dce8d3; background: #f7fbf2; color: #4c692b; cursor: pointer; }
+.pagination-actions button:hover:not(:disabled) { background: #eafaD8; }
+.pagination-actions button:disabled { opacity: .45; cursor: not-allowed; }
+.pagination-actions span { min-width: 75px; color: #455747; text-align: center; font-weight: 700; }
 @media (max-width: 1050px) {
   .site-header { padding: 18px 28px; }
   main { padding: 35px 28px 60px; }
@@ -106,4 +112,5 @@ tr:last-child td { border-bottom: 0; }
   .metrics-grid { grid-template-columns: 1fr; }
   .metric { min-height: 130px; }
   .header-actions { flex-wrap: wrap; }
+  .table-pagination { align-items: start; flex-direction: column; }
 }

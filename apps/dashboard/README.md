@@ -1,6 +1,6 @@
-# Dashboard da Pessoa B
+# Person B dashboard
 
-Protótipo local de B7, alimentado pelo cenário determinístico de B3. É uma página estática sem dependências enquanto A6/A7 e o transporte SSE não estão disponíveis. A implementação final prevista no plano é Next.js.
+A local B7 prototype powered by the deterministic B3 scenario. This is a static page with no dependencies while A6/A7 and the SSE transport are unavailable. The implementation plan calls for Next.js in the final version.
 
 ```powershell
 cd apps/runtime
@@ -9,4 +9,4 @@ cd ../dashboard
 python -m http.server 8000
 ```
 
-Abra `http://localhost:8000`. O painel identifica os dados como simulação, não mostra liquidação fictícia e mantém o kill switch indisponível até existir uma sessão real com endpoint de abort.
+Open `http://localhost:8000`. The dashboard labels the data as simulated, shows no fictitious settlement, and keeps the kill switch disabled until a live session and abort endpoint exist. The step timeline shows 10 entries per page.

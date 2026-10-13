@@ -1,52 +1,51 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>LoopRail — Dashboard</title>
-    <meta name="description" content="Painel de execução do agente LoopRail" />
+    <meta name="description" content="LoopRail agent execution dashboard" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <div class="app-shell">
       <header class="site-header">
         <a class="brand" href="#overview"><img class="brand-logo" src="./assets/looprail-logo.png" alt="" /><span>Loop<span class="brand-accent">Rail</span></span></a>
-        <nav aria-label="Navegação">
+        <nav aria-label="Main navigation">
           <a class="active" href="#overview">Dashboard</a>
           <a href="#performance">Performance</a>
           <a href="#providers">Providers</a>
-          <a href="#steps">Passos</a>
+          <a href="#steps">Steps</a>
         </nav>
-        <div class="header-profile"><span class="environment-dot"></span>Ambiente local<span class="avatar">L</span></div>
+        <div class="header-profile"><span class="environment-dot"></span>Local environment<span class="avatar">L</span></div>
       </header>
       <main id="overview">
         <header class="topbar">
           <div>
-            <div class="eyebrow">MARKET INTELLIGENCE / SESSÃO MOCK-50</div>
-            <h1>Controle em cada passo<span class="title-dot">.</span></h1>
-            <p>Acompanhe execução, latência e gasto do agente em uma única visão.</p>
+            <h1>Control at every step<span class="title-dot">.</span></h1>
+            <p>Track agent execution, latency, and spending in one view.</p>
           </div>
           <div class="header-actions">
-            <span class="status"><span class="status-dot"></span>Simulação local</span>
-            <button disabled title="Disponível quando houver sessão real e endpoint de abort">Encerrar sessão</button>
+            <span class="status"><span class="status-dot"></span>Local simulation</span>
+            <button disabled title="Available when a live session and abort endpoint are connected">End session</button>
           </div>
         </header>
         <section class="notice" role="status">
-          <strong>Dados simulados</strong>
-          <span>Custos e latências vêm do cenário reproduzível. Nenhum USDC foi autorizado ou liquidado na Solana.</span>
+          <strong>Simulated data</strong>
+          <span>Costs and latencies come from a reproducible scenario. No USDC was authorized or settled on Solana.</span>
         </section>
-        <section class="metrics-grid" aria-label="Métricas principais">
-          <article class="metric"><span>Passos executados</span><strong id="step-count">—</strong><small>market intelligence</small></article>
-          <article class="metric"><span>Custo simulado</span><strong id="spent">—</strong><small>de <span id="budget">—</span> no orçamento da policy</small></article>
-          <article class="metric"><span>Latência total simulada</span><strong id="duration">—</strong><small>p95 do provider: <span id="p95">—</span></small></article>
-          <article class="metric"><span>Liquidações on-chain</span><strong id="settlements">—</strong><small>simulação sem canal aberto</small></article>
+        <section class="metrics-grid" aria-label="Key metrics">
+          <article class="metric"><span>Steps completed</span><strong id="step-count">—</strong><small>in one session</small></article>
+          <article class="metric"><span>Simulated spend</span><strong id="spent">—</strong><small>of <span id="budget">—</span> policy budget</small></article>
+          <article class="metric"><span>Total simulated latency</span><strong id="duration">—</strong><small>provider p95: <span id="p95">—</span></small></article>
+          <article class="metric"><span>On-chain settlements</span><strong id="settlements">—</strong><small>no channel opened in this simulation</small></article>
         </section>
         <div class="insights-grid">
           <section class="panel chart-panel" id="performance">
-            <div class="panel-heading"><div><div class="eyebrow">PERFORMANCE</div><h2>Latência por passo</h2><p>Tempo do provider em cada chamada simulada.</p></div><span class="pill">50 passos</span></div>
+            <div class="panel-heading"><div><div class="eyebrow">PERFORMANCE</div><h2>Latency by step</h2><p>Provider time for each simulated call.</p></div><span class="pill">50 steps</span></div>
             <div class="chart-wrap">
               <div class="chart-scale"><span id="chart-max">—</span><span id="chart-mid">—</span><span>0 ms</span></div>
-              <svg viewBox="0 0 640 220" preserveAspectRatio="none" role="img" aria-label="Gráfico de latência por passo">
+              <svg viewBox="0 0 640 220" preserveAspectRatio="none" role="img" aria-label="Latency by step chart">
                 <line x1="0" y1="20" x2="640" y2="20" class="grid-line" />
                 <line x1="0" y1="110" x2="640" y2="110" class="grid-line" />
                 <line x1="0" y1="200" x2="640" y2="200" class="grid-line" />
@@ -54,39 +53,47 @@
                 <path id="latency-line" class="chart-line" d="" />
               </svg>
             </div>
-            <div class="chart-axis"><span>Passo 1</span><span>Passo 25</span><span>Passo 50</span></div>
+            <div class="chart-axis"><span>Step 1</span><span>Step 25</span><span>Step 50</span></div>
           </section>
-          <section class="highlight-panel" aria-label="Orçamento da sessão">
+          <section class="highlight-panel" aria-label="Session budget">
             <div class="eyebrow">SPEND POLICY ENGINE</div>
-            <div><h2>Orçamento<br />sob controle<span>.</span></h2><p>Reserva antes da chamada. Gasto calculado após a resposta.</p></div>
+            <div><h2>Spending<br />under control<span>.</span></h2><p>Reserve before each call. Record actual spend after the response.</p></div>
             <div class="highlight-bottom">
-              <div><span>Utilizado</span><strong id="budget-percent">—</strong></div>
+              <div><span>Used</span><strong id="budget-percent">—</strong></div>
               <div class="budget-track"><div id="budget-fill"></div></div>
-              <small>do limite configurado para esta sessão</small>
+              <small>of this session's configured limit</small>
             </div>
           </section>
         </div>
         <div class="content-grid">
           <section class="panel" id="providers">
-            <div class="panel-heading"><div><h2>Consumo por provider</h2><p>Valores agregados a partir dos passos.</p></div><span class="pill">USDC</span></div>
+            <div class="panel-heading"><div><h2>Spend by provider</h2><p>Totals calculated from step events.</p></div><span class="pill">USDC</span></div>
             <div id="provider-bars" class="provider-bars"></div>
           </section>
           <section class="panel session-panel">
-            <div class="panel-heading"><div><h2>Resumo da sessão</h2><p>Origem e situação dos dados.</p></div></div>
+            <div class="panel-heading"><div><h2>Session summary</h2><p>Data source and execution status.</p></div></div>
             <dl>
-              <div><dt>ID da sessão</dt><dd id="session-id">—</dd></div>
-              <div><dt>Modo</dt><dd id="mode">—</dd></div>
-              <div><dt>Transações</dt><dd id="transactions">—</dd></div>
-              <div><dt>Origem das métricas</dt><dd id="source">—</dd></div>
+              <div><dt>Session ID</dt><dd id="session-id">—</dd></div>
+              <div><dt>Mode</dt><dd id="mode">—</dd></div>
+              <div><dt>Transactions</dt><dd id="transactions">—</dd></div>
+              <div><dt>Metrics source</dt><dd id="source">—</dd></div>
             </dl>
           </section>
         </div>
         <section class="panel steps-panel" id="steps">
-          <div class="panel-heading"><div><h2>Linha do tempo</h2><p>Decisão da policy, custo e latência de cada passo.</p></div><span class="pill" id="step-total">— passos</span></div>
+          <div class="panel-heading"><div><h2>Step timeline</h2><p>Policy decision, cost, and latency for every step.</p></div><span class="pill" id="step-total">— steps</span></div>
           <div class="table-wrap"><table>
-            <thead><tr><th>Passo</th><th>Ferramenta</th><th>Provider</th><th>Resultado</th><th>Custo</th><th>Latência</th></tr></thead>
+            <thead><tr><th>Step</th><th>Tool</th><th>Provider</th><th>Outcome</th><th>Cost</th><th>Latency</th></tr></thead>
             <tbody id="step-rows"></tbody>
           </table></div>
+          <div class="table-pagination" aria-label="Step pagination">
+            <span id="page-range">—</span>
+            <div class="pagination-actions">
+              <button id="page-prev" type="button" aria-label="Previous page">Previous</button>
+              <span id="page-current" aria-live="polite">Page 1 of 1</span>
+              <button id="page-next" type="button" aria-label="Next page">Next</button>
+            </div>
+          </div>
         </section>
       </main>
     </div>
