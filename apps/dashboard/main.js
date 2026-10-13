@@ -6,7 +6,9 @@ const themeToggle = document.getElementById("theme-toggle");
 function setTheme(theme) {
   const dark = theme === "dark";
   document.documentElement.dataset.theme = dark ? "dark" : "light";
-  themeToggle.textContent = dark ? "Light mode" : "Dark mode";
+  themeToggle.querySelector(".theme-label").textContent = dark ? "Light mode" : "Dark mode";
+  themeToggle.querySelector(".icon-moon").hidden = dark;
+  themeToggle.querySelector(".icon-sun").hidden = !dark;
   themeToggle.setAttribute("aria-pressed", String(dark));
   try { localStorage.setItem("looprail-theme", dark ? "dark" : "light"); } catch { /* Storage is optional. */ }
 }
