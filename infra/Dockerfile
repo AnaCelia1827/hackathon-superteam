@@ -37,10 +37,8 @@ ENV PATH="/root/.local/share/solana/install/active_release/bin:${PATH}"
 # --- Node (pinned via nvm) ---
 ENV NVM_DIR=/usr/local/nvm
 RUN mkdir -p "${NVM_DIR}" \
- && . "${NVM_DIR}/nvm.sh" \
- && nvm install "${NODE_VERSION}" \
- && nvm alias default "${NODE_VERSION}" \
- && nvm use default
+ && curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash \
+ && bash -c '. "${NVM_DIR}/nvm.sh" && nvm install "${NODE_VERSION}" && nvm alias default "${NODE_VERSION}"'
 ENV PATH="${NVM_DIR}/versions/node/v${NODE_VERSION}/bin:${PATH}"
 
 # --- Anchor via avm (pinned) ---
