@@ -58,4 +58,12 @@ RUN npm install -g \
 # --- pay-kit (pinned) ---
 RUN pip install --break-system-packages "solana_pay_kit==${PAY_KIT_VERSION}"
 
+# --- yarn (classic, used by the Anchor/MagicBlock example workspaces) ---
+RUN npm install -g yarn@1.22.19
+
+# --- Bake anchor-cli's first-run toolchain setup ---
+# `anchor` self-installs the Agave release it requires (observed: 3.1.10 for anchor-cli 1.0.2,
+# newer than the plan's 3.1.9) plus SBF platform-tools. Doing it at build keeps `make dev`/tests fast.
+RUN anchor --version
+
 WORKDIR /workspace
