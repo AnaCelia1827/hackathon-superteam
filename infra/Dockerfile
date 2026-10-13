@@ -11,6 +11,7 @@ ARG ANCHOR_VERSION=1.0.2
 ARG NODE_VERSION=24.10.0
 ARG NVM_VERSION=v0.40.1
 ARG ER_SDK_VERSION=0.16.2
+ARG EPHEMERAL_VALIDATOR_VERSION=0.14.10
 ARG PAY_KIT_VERSION=0.10.0
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -47,9 +48,10 @@ RUN cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
  && avm use "${ANCHOR_VERSION}"
 
 # --- MagicBlock ER tooling + pay CLI + ER SDK ---
+# `@magicblock-labs/ephemeral-validator` also provides the `mb-test-validator` binary
+# (there is no standalone `@magicblock-labs/solana-test-validator` package on npm).
 RUN npm install -g \
-      "@magicblock-labs/ephemeral-validator@latest" \
-      "@magicblock-labs/solana-test-validator" \
+      "@magicblock-labs/ephemeral-validator@${EPHEMERAL_VALIDATOR_VERSION}" \
       "@magicblock-labs/ephemeral-rollups-sdk@${ER_SDK_VERSION}" \
       "@solana/pay"
 

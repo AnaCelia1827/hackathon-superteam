@@ -24,11 +24,12 @@ Delegation Program: `DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh`
 ## Pins (authoritative)
 
 Rust `1.89.0` · Solana/Agave `3.1.9` · Anchor `1.0.2` · Node `24.10.0` · Python `3.12` ·
-`solana_pay_kit==0.10.0` · `@magicblock-labs/ephemeral-rollups-sdk@0.16.2`.
+`solana_pay_kit==0.10.0` · `@magicblock-labs/ephemeral-rollups-sdk@0.16.2` ·
+`@magicblock-labs/ephemeral-validator@0.14.10`.
 
-See `looprail_plano_implementacao.md` §J2. `@magicblock-labs/ephemeral-validator` is pinned to
-`latest` because MagicBlock does not version-tag it per our toolchain; freeze the resolved version in
-the Dockerfile once A1 locks it.
+See `looprail_plano_implementacao.md` §J2. `@magicblock-labs/ephemeral-validator` provides the
+`mb-test-validator` and `mb-stack` binaries (there is no standalone `solana-test-validator` npm
+package).
 
 ## Notes
 
