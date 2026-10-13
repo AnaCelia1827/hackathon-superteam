@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "session_id": "mock-50",
+  "step_index": 0,
+  "tool": "market_data",
+  "provider": "market_data",
+  "outcome": "success",
+  "reason": "within_policy",
+  "cost_usdc_base_units": 1000,
+  "provider_latency_ms": 26,
+  "looprail_overhead_ms": null,
+  "cache_hit": false,
+  "occurred_at": "2026-01-01T00:00:00Z"
+}

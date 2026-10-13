@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "budget_usdc_base_units": 1000000,
+  "max_steps": 50,
+  "provider_limits": {
+    "market_data": {
+      "allocation_usdc_base_units": 1000000,
+      "max_price_per_call_usdc_base_units": 1000
+    }
+  }
+}

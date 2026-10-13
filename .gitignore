@@ -1,25 +1,32 @@
-# --- secrets / keys: never commit (plan J2) ---
+# Secrets and keys
 .env
+.env.*
+!.env.example
 *.keypair.json
 id.json
 operator.json
 payer.json
 keys/
 
-# --- rust / anchor ---
+# Rust, Anchor, and local validators
 target/
 .anchor/
 .surfer/
 test-ledger/
 
-# --- node ---
+# Node
 node_modules/
+.next/
 dist/
+build/
 
-# --- python ---
+# Python
 .venv/
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
+.pytest_cache/
 
-# --- misc ---
+# Generated benchmark output and OS files
+benchmarks/results/
 .DS_Store

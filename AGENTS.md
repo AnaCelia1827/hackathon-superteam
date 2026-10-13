@@ -1,16 +1,15 @@
 # AGENTS.md
 
 LoopRail is a runtime + metered-payment layer for autonomous AI agents on Solana.
-Greenfield hackathon repo: only the pitch PDF and the implementation plan exist so far.
-There is no code, build, CI, or git yet. Do not assume a stack.
+Hackathon repo with shared contracts, a Python runtime prototype, and a local dashboard. Person A's on-chain and payment services are not implemented yet.
 
 ## Sources of truth
-- `looprail_plano_implementacao.md` — task plan (J1-J4, A1-A10, B1-B8), pinned versions, constraints. Primary.
+- `looprail_implementation_plan.md` — task plan (J1-J4, A1-A10, B1-B8), pinned versions, constraints. Primary.
 - `looprail_ideacao.pdf` — product/pitch context (architecture, policy example, demo script).
-Both are in Portuguese. Read the plan before starting any task; it names acceptance criteria per task.
+The original PDF is in Portuguese. Read the English implementation plan before starting any task; it names acceptance criteria per task.
 
-## Undecided / do not assume
-- Stack is NOT chosen. ADR-1 (Python + TS sidecar vs. pure TS) is pending spikes A2/A3. Don't pick a language unilaterally.
+## Architecture decisions
+- The user selected Python for the runtime and TypeScript for the ledger service. A2/A3 still determine the payment integration details.
 - Channel topology is ADR-2; MVP default is one payment channel per provider, not a single gateway.
 - "1 settlement" in the pitch is aspirational: with N providers there are N settlements (one per receiver). Prefer "N settlements instead of 50 payments".
 
@@ -24,7 +23,7 @@ Both are in Portuguese. Read the plan before starting any task; it names accepta
 ## Architecture / ownership (planned)
 - Person A: on-chain + payments — Anchor program `looprail_session` (fixed-size `Session` PDA, `steps[K]` ring buffer), TS ledger service, `PaymentAdapter` (`open/reserve/commit/release/close_all`).
 - Person B: runtime + policy + demo — pure-API Spend Policy Engine (`evaluate(ctx, request) -> Decision`), agent loop, `ToolRegistry`, deterministic mock, SDK, dashboard.
-- Shared contracts as JSON Schema in `contracts/`: `Policy`, `StepRecord`, `PaymentAdapter`, `Metrics`.
+- Shared contracts as JSON Schema in `packages/contracts/`: `Policy`, `StepRecord`, `PaymentAdapter`, `Metrics`.
 
 ## Gotchas that will bite
 - MagicBlock ER: a delegated account without a fee payer halts after 10 commits (with fee payer, fees apply from the 26th). Resizing a delegated PDA needs rent lamports and possibly a delegated payer. => `StepLog` must be fixed-size ring buffer and sessions use <= 2 checkpoints + 1 final commit, never one commit per step.

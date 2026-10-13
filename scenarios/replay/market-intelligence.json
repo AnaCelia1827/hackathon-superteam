@@ -1,0 +1,512 @@
+{
+  "version": 1,
+  "scenario": "market_intelligence",
+  "seed": 42,
+  "responses": {
+    "0": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 148.74,
+        "change_pct": 1.1,
+        "volume_usd": 1250000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 26
+    },
+    "1": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 149.16,
+        "change_pct": 1.23,
+        "volume_usd": 1259000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 40
+    },
+    "2": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 149.58,
+        "change_pct": 1.36,
+        "volume_usd": 1268000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 26
+    },
+    "3": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 150.0,
+        "change_pct": 1.49,
+        "volume_usd": 1277000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 20
+    },
+    "4": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 150.42,
+        "change_pct": 1.62,
+        "volume_usd": 1286000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 39
+    },
+    "5": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 150.84,
+        "change_pct": 1.1,
+        "volume_usd": 1295000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 39
+    },
+    "6": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 151.26,
+        "change_pct": 1.23,
+        "volume_usd": 1304000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 32
+    },
+    "7": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 148.74,
+        "change_pct": 1.36,
+        "volume_usd": 1313000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 23
+    },
+    "8": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 149.16,
+        "change_pct": 1.49,
+        "volume_usd": 1322000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 22
+    },
+    "9": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 149.58,
+        "change_pct": 1.62,
+        "volume_usd": 1331000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 24
+    },
+    "10": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 150.0,
+        "change_pct": 1.1,
+        "volume_usd": 1340000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 36
+    },
+    "11": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 150.42,
+        "change_pct": 1.23,
+        "volume_usd": 1349000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 37
+    },
+    "12": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 150.84,
+        "change_pct": 1.36,
+        "volume_usd": 1358000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 22
+    },
+    "13": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 151.26,
+        "change_pct": 1.49,
+        "volume_usd": 1367000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 35
+    },
+    "14": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 148.74,
+        "change_pct": 1.62,
+        "volume_usd": 1376000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 20
+    },
+    "15": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 149.16,
+        "change_pct": 1.1,
+        "volume_usd": 1385000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 35
+    },
+    "16": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 149.58,
+        "change_pct": 1.23,
+        "volume_usd": 1394000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 40
+    },
+    "17": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 150.0,
+        "change_pct": 1.36,
+        "volume_usd": 1403000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 24
+    },
+    "18": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 150.42,
+        "change_pct": 1.49,
+        "volume_usd": 1412000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 26
+    },
+    "19": {
+      "tool": "market_data",
+      "output": {
+        "symbol": "SOL",
+        "price_usd": 150.84,
+        "change_pct": 1.62,
+        "volume_usd": 1421000
+      },
+      "cost_usdc_base_units": 1000,
+      "provider_latency_ms": 37
+    },
+    "20": {
+      "tool": "news_search",
+      "output": {
+        "headline": "SOL trading volume rises alongside higher volatility",
+        "sentiment": "mixed"
+      },
+      "cost_usdc_base_units": 800,
+      "provider_latency_ms": 50
+    },
+    "21": {
+      "tool": "news_search",
+      "output": {
+        "headline": "Network activity increases across Solana applications",
+        "sentiment": "mixed"
+      },
+      "cost_usdc_base_units": 800,
+      "provider_latency_ms": 52
+    },
+    "22": {
+      "tool": "news_search",
+      "output": {
+        "headline": "Market participants watch macro liquidity conditions",
+        "sentiment": "mixed"
+      },
+      "cost_usdc_base_units": 800,
+      "provider_latency_ms": 49
+    },
+    "23": {
+      "tool": "news_search",
+      "output": {
+        "headline": "On-chain activity remains elevated after the price move",
+        "sentiment": "mixed"
+      },
+      "cost_usdc_base_units": 800,
+      "provider_latency_ms": 52
+    },
+    "24": {
+      "tool": "news_search",
+      "output": {
+        "headline": "SOL trading volume rises alongside higher volatility",
+        "sentiment": "mixed"
+      },
+      "cost_usdc_base_units": 800,
+      "provider_latency_ms": 44
+    },
+    "25": {
+      "tool": "news_search",
+      "output": {
+        "headline": "Network activity increases across Solana applications",
+        "sentiment": "mixed"
+      },
+      "cost_usdc_base_units": 800,
+      "provider_latency_ms": 30
+    },
+    "26": {
+      "tool": "news_search",
+      "output": {
+        "headline": "Market participants watch macro liquidity conditions",
+        "sentiment": "mixed"
+      },
+      "cost_usdc_base_units": 800,
+      "provider_latency_ms": 65
+    },
+    "27": {
+      "tool": "news_search",
+      "output": {
+        "headline": "On-chain activity remains elevated after the price move",
+        "sentiment": "mixed"
+      },
+      "cost_usdc_base_units": 800,
+      "provider_latency_ms": 36
+    },
+    "28": {
+      "tool": "news_search",
+      "output": {
+        "headline": "SOL trading volume rises alongside higher volatility",
+        "sentiment": "mixed"
+      },
+      "cost_usdc_base_units": 800,
+      "provider_latency_ms": 37
+    },
+    "29": {
+      "tool": "news_search",
+      "output": {
+        "headline": "Network activity increases across Solana applications",
+        "sentiment": "mixed"
+      },
+      "cost_usdc_base_units": 800,
+      "provider_latency_ms": 61
+    },
+    "30": {
+      "tool": "inference",
+      "output": {
+        "classification": "elevated_volatility",
+        "risk": "moderate",
+        "confidence": 0.78
+      },
+      "cost_usdc_base_units": 2000,
+      "provider_latency_ms": 95
+    },
+    "31": {
+      "tool": "inference",
+      "output": {
+        "classification": "elevated_volatility",
+        "risk": "moderate",
+        "confidence": 0.8
+      },
+      "cost_usdc_base_units": 2000,
+      "provider_latency_ms": 101
+    },
+    "32": {
+      "tool": "inference",
+      "output": {
+        "classification": "elevated_volatility",
+        "risk": "moderate",
+        "confidence": 0.82
+      },
+      "cost_usdc_base_units": 2000,
+      "provider_latency_ms": 82
+    },
+    "33": {
+      "tool": "inference",
+      "output": {
+        "classification": "elevated_volatility",
+        "risk": "moderate",
+        "confidence": 0.84
+      },
+      "cost_usdc_base_units": 2000,
+      "provider_latency_ms": 118
+    },
+    "34": {
+      "tool": "inference",
+      "output": {
+        "classification": "elevated_volatility",
+        "risk": "moderate",
+        "confidence": 0.86
+      },
+      "cost_usdc_base_units": 2000,
+      "provider_latency_ms": 97
+    },
+    "35": {
+      "tool": "inference",
+      "output": {
+        "classification": "elevated_volatility",
+        "risk": "moderate",
+        "confidence": 0.78
+      },
+      "cost_usdc_base_units": 2000,
+      "provider_latency_ms": 139
+    },
+    "36": {
+      "tool": "inference",
+      "output": {
+        "classification": "elevated_volatility",
+        "risk": "moderate",
+        "confidence": 0.8
+      },
+      "cost_usdc_base_units": 2000,
+      "provider_latency_ms": 128
+    },
+    "37": {
+      "tool": "inference",
+      "output": {
+        "classification": "elevated_volatility",
+        "risk": "moderate",
+        "confidence": 0.82
+      },
+      "cost_usdc_base_units": 2000,
+      "provider_latency_ms": 121
+    },
+    "38": {
+      "tool": "inference",
+      "output": {
+        "classification": "elevated_volatility",
+        "risk": "moderate",
+        "confidence": 0.84
+      },
+      "cost_usdc_base_units": 2000,
+      "provider_latency_ms": 91
+    },
+    "39": {
+      "tool": "inference",
+      "output": {
+        "classification": "elevated_volatility",
+        "risk": "moderate",
+        "confidence": 0.86
+      },
+      "cost_usdc_base_units": 2000,
+      "provider_latency_ms": 95
+    },
+    "40": {
+      "tool": "inference",
+      "output": {
+        "classification": "elevated_volatility",
+        "risk": "moderate",
+        "confidence": 0.78
+      },
+      "cost_usdc_base_units": 2000,
+      "provider_latency_ms": 82
+    },
+    "41": {
+      "tool": "inference",
+      "output": {
+        "classification": "elevated_volatility",
+        "risk": "moderate",
+        "confidence": 0.8
+      },
+      "cost_usdc_base_units": 2000,
+      "provider_latency_ms": 121
+    },
+    "42": {
+      "tool": "inference",
+      "output": {
+        "classification": "elevated_volatility",
+        "risk": "moderate",
+        "confidence": 0.82
+      },
+      "cost_usdc_base_units": 2000,
+      "provider_latency_ms": 99
+    },
+    "43": {
+      "tool": "inference",
+      "output": {
+        "classification": "elevated_volatility",
+        "risk": "moderate",
+        "confidence": 0.84
+      },
+      "cost_usdc_base_units": 2000,
+      "provider_latency_ms": 82
+    },
+    "44": {
+      "tool": "inference",
+      "output": {
+        "classification": "elevated_volatility",
+        "risk": "moderate",
+        "confidence": 0.86
+      },
+      "cost_usdc_base_units": 2000,
+      "provider_latency_ms": 121
+    },
+    "45": {
+      "tool": "coordination",
+      "output": {
+        "state": "thesis_updated",
+        "checkpoint": 45
+      },
+      "cost_usdc_base_units": 0,
+      "provider_latency_ms": 2
+    },
+    "46": {
+      "tool": "coordination",
+      "output": {
+        "state": "thesis_updated",
+        "checkpoint": 46
+      },
+      "cost_usdc_base_units": 0,
+      "provider_latency_ms": 2
+    },
+    "47": {
+      "tool": "coordination",
+      "output": {
+        "state": "thesis_updated",
+        "checkpoint": 47
+      },
+      "cost_usdc_base_units": 0,
+      "provider_latency_ms": 1
+    },
+    "48": {
+      "tool": "coordination",
+      "output": {
+        "state": "thesis_updated",
+        "checkpoint": 48
+      },
+      "cost_usdc_base_units": 0,
+      "provider_latency_ms": 2
+    },
+    "49": {
+      "tool": "coordination",
+      "output": {
+        "state": "thesis_updated",
+        "checkpoint": 49
+      },
+      "cost_usdc_base_units": 0,
+      "provider_latency_ms": 3
+    }
+  }
+}
