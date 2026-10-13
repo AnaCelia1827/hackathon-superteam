@@ -24,8 +24,9 @@ ps: ## show stack status
 shell: ## open a shell in the dev image (repo mounted at /workspace)
 	$(COMPOSE) run --rm tools bash
 
-test: ## validate every contract example against its schema
+test: ## validate contracts and ledger service behavior
 	python3 infra/scripts/validate_contracts.py
+	node --experimental-strip-types --test apps/ledger/test/ledger.test.ts
 
 lint: ## JSON validity + python syntax
 	python3 -m compileall -q infra/scripts
