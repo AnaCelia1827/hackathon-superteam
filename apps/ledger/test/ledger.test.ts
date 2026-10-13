@@ -6,7 +6,7 @@ import { LedgerClient } from "../src/client.ts";
 import type { ChainPort, OpenSession, Step } from "../src/types.ts";
 
 const id = "ab".repeat(32);
-const input: OpenSession = { session_id: id, policy_hash: "cd".repeat(32), budget_usdc_base_units: 100000, owner: "owner", authority: "authority", tools: ["tool"], providers: ["provider"] };
+const input: OpenSession = { session_id: id, policy_hash: "cd".repeat(32), budget_usdc_base_units: 100000, owner: "owner", authority: "authority", tools: ["tool"], providers: ["provider"], provider_pubkeys: ["provider-pubkey"], provider_allocations_usdc_base_units: [100000] };
 const step = (n: number): Step => ({ version: 1, session_id: id, step_index: n, tool: "tool", provider: "provider", outcome: "success", cost_usdc_base_units: 1000, provider_latency_ms: 10, looprail_overhead_ms: null, cache_hit: false, occurred_at: "2026-10-13T00:00:00Z" });
 
 class FakeChain implements ChainPort {

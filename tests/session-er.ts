@@ -2,9 +2,10 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program, BN, web3 } from "@coral-xyz/anchor";
 import { LooprailSession } from "../target/types/looprail_session";
 import { GetCommitmentSignature } from "@magicblock-labs/ephemeral-rollups-sdk";
+import { randomBytes } from "node:crypto";
 
 const SESSION_SEED = "session";
-const N_STEPS = Number(process.env.A5_ER_STEPS ?? 20);
+const N_STEPS = Number(process.env.A5_ER_STEPS ?? 50);
 
 function arr(n: number, len = 32): number[] {
   const b = Buffer.alloc(len);
@@ -42,7 +43,7 @@ describe("looprail-session (ER integration)", () => {
 
     const owner = provider.wallet.publicKey;
     const authority = anchor.Wallet.local().payer;
-    const sid = arr(1);
+    const sid = Array.from(randomBytes(32));
     const [sessionPda] = anchor.web3.PublicKey.findProgramAddressSync(
       [Buffer.from(SESSION_SEED), owner.toBuffer(), Buffer.from(sid)],
       program.programId,
@@ -56,7 +57,7 @@ describe("looprail-session (ER integration)", () => {
     // 1. init on base
     await program.methods
       .initSession(sid, arr(2), authority.publicKey, new BN(1_000_000), [provider0], [new BN(1_000_000)])
-      .accounts({ owner, systemProgram: web3.SystemProgram.programId })
+      .accounts({ owner, session: sessionPda, systemProgram: web3.SystemProgram.programId })
       .rpc({ skipPreflight: true, commitment: "confirmed" });
 
     // 2. delegate
@@ -70,7 +71,7 @@ describe("looprail-session (ER integration)", () => {
     // 3. record on ER
     for (let i = 0; i < N_STEPS; i++) {
       await programEr.methods
-        .recordStep(i, 0, 0, new BN(10), 5, 0, false)
+        .recordStep(owner, sid, i, 0, 0, new BN(10), 5, 0, false)
         .accounts({ session: sessionPda, authority: authority.publicKey })
         .signers([authority])
         .rpc();
@@ -78,8 +79,8 @@ describe("looprail-session (ER integration)", () => {
 
     // 4. checkpoint (commit)
     const commitSig = await programEr.methods
-      .checkpoint()
-      .accounts({ payer: erProvider.wallet.publicKey })
+      .checkpoint(owner, sid)
+      .accounts({ payer: erProvider.wallet.publicKey, session: sessionPda })
       .rpc({ skipPreflight: true, commitment: "confirmed" });
     await GetCommitmentSignature(commitSig, erProvider.connection);
     await sleep(1000);
@@ -90,13 +91,16 @@ describe("looprail-session (ER integration)", () => {
 
     // 5. terminal close_and_undelegate
     await programEr.methods
-      .closeAndUndelegate()
-      .accounts({ payer: erProvider.wallet.publicKey })
+      .closeAndUndelegate(owner, sid)
+      .accounts({ payer: erProvider.wallet.publicKey, session: sessionPda })
       .rpc({ skipPreflight: true, commitment: "confirmed" });
     await sleep(1000);
     const afterClose = await program.account.session.fetch(sessionPda);
     if (afterClose.status !== 1) {
       throw new Error(`status after close: expected 1, got ${afterClose.status}`);
+    }
+    if (Number(afterClose.stepCount) !== N_STEPS || afterClose.spent.toNumber() !== N_STEPS * 10) {
+      throw new Error(`final ledger mismatch: count=${afterClose.stepCount}, spent=${afterClose.spent}`);
     }
   });
 });

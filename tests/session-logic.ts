@@ -15,6 +15,16 @@ function bytes32(n: number): number[] {
   return Array.from(b);
 }
 
+async function expectProgramError(promise: Promise<unknown>, pattern: RegExp): Promise<void> {
+  try {
+    await promise;
+  } catch (error) {
+    expect(String(error)).to.match(pattern);
+    return;
+  }
+  throw new Error(`Expected program error matching ${pattern}`);
+}
+
 describe("looprail-session (local validator)", () => {
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
@@ -33,7 +43,7 @@ describe("looprail-session (local validator)", () => {
     const sessionPda = pda(sid);
     await program.methods
       .initSession(bytes32(sid), bytes32(1000 + sid), authority, new BN(budget), providers, allocations.map((a) => new BN(a)))
-      .accounts({ owner: owner.publicKey, systemProgram: SystemProgram.programId })
+      .accounts({ owner: owner.publicKey, session: sessionPda, systemProgram: SystemProgram.programId })
       .rpc();
     return sessionPda;
   }
@@ -71,32 +81,33 @@ describe("looprail-session (local validator)", () => {
   it("rejects a budget overrun", async () => {
     const authority = Keypair.generate();
     const sessionPda = await init(2, authority.publicKey, 1_000, [Keypair.generate().publicKey], [1_000]);
-    await expect(record(2, sessionPda, authority, 0, 0, 1_001)).to.be.rejectedWith(/0x1779|budget/i);
+    await expectProgramError(record(2, sessionPda, authority, 0, 0, 1_001), /0x1779|budget/i);
   });
 
   it("rejects a provider allocation overrun", async () => {
     const authority = Keypair.generate();
     const sessionPda = await init(3, authority.publicKey, 10_000, [Keypair.generate().publicKey], [500]);
-    await expect(record(3, sessionPda, authority, 0, 0, 501)).to.be.rejectedWith(/0x177A|allocation/i);
+    await expectProgramError(record(3, sessionPda, authority, 0, 0, 501), /0x177A|allocation/i);
   });
 
   it("rejects an out-of-order step_idx", async () => {
     const authority = Keypair.generate();
     const sessionPda = await init(4, authority.publicKey, 10_000, [Keypair.generate().publicKey], [10_000]);
-    await expect(record(4, sessionPda, authority, 1, 0, 1)).to.be.rejectedWith(/0x1775|step_idx|monotonic/i);
+    await expectProgramError(record(4, sessionPda, authority, 1, 0, 1), /0x1775|step_idx|monotonic/i);
   });
 
   it("rejects a wrong signer", async () => {
     const authority = Keypair.generate();
     const impostor = Keypair.generate();
     const sessionPda = await init(5, authority.publicKey, 10_000, [Keypair.generate().publicKey], [10_000]);
-    await expect(
+    await expectProgramError(
       program.methods
         .recordStep(owner.publicKey, bytes32(5), 0, 0, 0, new BN(1), 5, 0, false)
         .accounts({ session: sessionPda, authority: impostor.publicKey })
         .signers([impostor])
         .rpc(),
-    ).to.be.rejectedWith(/0x1773|authority/i);
+      /0x1773|authority/i,
+    );
   });
 
   it("aborts and blocks further steps", async () => {
@@ -108,7 +119,7 @@ describe("looprail-session (local validator)", () => {
 
     const session = await program.account.session.fetch(sessionPda);
     expect(session.status).to.equal(STATUS_ABORTED);
-    await expect(record(6, sessionPda, authority, 1, 0, 1)).to.be.rejectedWith(/0x1774|not open/i);
+    await expectProgramError(record(6, sessionPda, authority, 1, 0, 1), /0x1774|not open/i);
   });
 
   it("wraps the ring buffer and keeps the last K steps", async () => {

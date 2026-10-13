@@ -48,6 +48,7 @@ pub mod looprail_session {
         allocations: Vec<u64>,
     ) -> Result<()> {
         require!(budget_total > 0, LoopRailError::InvalidBudget);
+        require!(authority != Pubkey::default(), LoopRailError::InvalidAuthority);
         require!(
             providers.len() == allocations.len(),
             LoopRailError::ChannelConfigMismatch
@@ -55,7 +56,9 @@ pub mod looprail_session {
         require!(providers.len() <= MAX_CHANNELS, LoopRailError::ChannelsFull);
 
         let mut allocated: u64 = 0;
-        for allocation in allocations.iter() {
+        for (i, allocation) in allocations.iter().enumerate() {
+            require!(providers[i] != Pubkey::default(), LoopRailError::InvalidProvider);
+            require!(providers[..i].iter().all(|provider| *provider != providers[i]), LoopRailError::DuplicateProvider);
             allocated = allocated
                 .checked_add(*allocation)
                 .ok_or(LoopRailError::InvalidBudget)?;
@@ -155,7 +158,12 @@ pub mod looprail_session {
             .spent
             .checked_add(cost)
             .ok_or(LoopRailError::BudgetExceeded)?;
-        require!(new_spent <= session.budget_total, LoopRailError::BudgetExceeded);
+        require!(
+            new_spent
+                .checked_add(session.reserved)
+                .is_some_and(|total| total <= session.budget_total),
+            LoopRailError::BudgetExceeded
+        );
 
         let channel = &mut session.channels[provider_idx as usize];
         let channel_spent = channel
@@ -241,7 +249,9 @@ pub mod looprail_session {
             session.status == STATUS_OPEN || session.status == STATUS_ABORTED,
             LoopRailError::InvalidStatus
         );
-        session.status = STATUS_CLOSED;
+        if session.status == STATUS_OPEN {
+            session.status = STATUS_CLOSED;
+        }
         session.closed_at = Clock::get()?.unix_timestamp;
         let step_count = session.step_count;
         let spent = session.spent;
@@ -447,4 +457,10 @@ pub enum LoopRailError {
     TooManyCheckpoints,
     #[msg("session status does not allow this instruction")]
     InvalidStatus,
+    #[msg("authority must be a non-default public key")]
+    InvalidAuthority,
+    #[msg("provider must be a non-default public key")]
+    InvalidProvider,
+    #[msg("provider public keys must be unique within a session")]
+    DuplicateProvider,
 }
