@@ -20,8 +20,12 @@ export function parseOpen(value: unknown): OpenSession {
   if (!object(value) || !/^[0-9a-f]{64}$/.test(String(value.session_id)) || !/^[0-9a-f]{64}$/.test(String(value.policy_hash)) ||
       !integer(value.budget_usdc_base_units) || !str(value.owner) || !str(value.authority) ||
       !Array.isArray(value.tools) || value.tools.length > 255 || !value.tools.every(str) || new Set(value.tools).size !== value.tools.length ||
-      !Array.isArray(value.providers) || value.providers.length > 8 || !value.providers.every(str) || new Set(value.providers).size !== value.providers.length) {
-    throw new LedgerError(400, "Invalid session: require 32-byte hex session_id/policy_hash, integer budget, owner, authority, tools and up to 8 providers");
+      !Array.isArray(value.providers) || value.providers.length > 8 || !value.providers.every(str) || new Set(value.providers).size !== value.providers.length ||
+      !Array.isArray(value.provider_pubkeys) || value.provider_pubkeys.length !== value.providers.length || !value.provider_pubkeys.every(str) || new Set(value.provider_pubkeys).size !== value.provider_pubkeys.length ||
+      !Array.isArray(value.provider_allocations_usdc_base_units) || value.provider_allocations_usdc_base_units.length !== value.providers.length ||
+      !value.provider_allocations_usdc_base_units.every(amount => integer(amount)) ||
+      value.provider_allocations_usdc_base_units.reduce((sum: number, amount: number) => sum + amount, 0) > value.budget_usdc_base_units) {
+    throw new LedgerError(400, "Invalid session: require 32-byte hex IDs, integer budget, owner, authority, tools and up to 8 providers with unique pubkeys and allocations within budget");
   }
   return value as OpenSession;
 }

@@ -101,16 +101,17 @@ require the validator.
 - Local dashboard with SSE step streaming and virtual-session abort.
 - Shared contract schemas and examples.
 - Ledger service queue behavior tested with a chain-port fake.
+- An MPP payment adapter with a confirmed USDC settlement on the Surfpool sandbox.
+- A dashboard view of that recorded settlement and an English demo video.
 - ADRs documenting the selected language, channel topology, and PDA model.
 
 ### In progress or not yet connected
 
-- The ledger service's real Anchor/MagicBlock adapter depends on the A5
-  program interface and generated IDL.
-- Real authorization, on-chain settlements, explorer links, and paid providers
-  are not part of the deterministic prototype.
-- The dashboard labels prototype amounts as simulated and reports zero
-  on-chain settlements.
+- The A5 base-to-ER path has not been verified in this Windows environment.
+- The deterministic agent prototype still uses virtual payments. Its live
+  integration with the ledger and MPP adapter is pending.
+- The dashboard labels mock/replay amounts as simulated and shows a separate
+  recorded sandbox settlement; it does not start new paid runs.
 - The ledger queue is in memory; restarting the service loses queued events.
 - Benchmark outputs must come from measured runs; mock transaction counts and
   fees are intentionally not substituted.

@@ -37,6 +37,17 @@ Open <http://127.0.0.1:8000>.
 
 The dashboard uses `source=simulation`, `onchain_transactions=0`, and
 `settlements=0` to distinguish this prototype from a real payment run.
+Click **View on-chain run** to inspect a separate, saved Surfpool sandbox
+settlement: 0.060 USDC deposited, 0.002 spent, and 0.058 refunded.
+
+## English video
+
+`looprail-demo-en.mp4` presents the problem, replay, metrics, sandbox payment,
+and proposed business model. The agent replay and payment are separate runs.
+To record again on Windows, start `apps/dashboard/server.py` at port 8000 and
+run `docs/demo/record_demo.py` with Playwright and imageio-ffmpeg installed.
+The recording uses installed Chrome and the Windows Microsoft Zira English
+voice. Edit `narration.json` to change the script.
 
 ## Regenerate fixture data
 
@@ -55,6 +66,6 @@ python -m http.server 8000
 
 ## Scope
 
-Real authorization, reserved balances, explorer links, settlement signatures,
-and paid providers require the on-chain and payment tasks described in the
+The saved sandbox record has one verified settlement signature. A live agent
+run combining policy, ledger, and payment adapters remains pending; see the
 [implementation plan](../../looprail_implementation_plan.md).

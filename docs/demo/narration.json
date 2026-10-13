@@ -1,0 +1,37 @@
+[
+  {
+    "title": "LoopRail",
+    "caption": "Budgeted, metered payments for autonomous agents",
+    "voice": "LoopRail gives autonomous agents a spending policy, metered payments, and an auditable record on Solana."
+  },
+  {
+    "title": "The problem",
+    "caption": "Dozens of API calls need a budget and a clear payment trail.",
+    "voice": "An agent can make dozens of small API calls. Paying on chain for every call adds overhead, and an agent without spending controls can exceed its budget."
+  },
+  {
+    "title": "The agent loop",
+    "caption": "Observe. Decide. Reserve. Call. Commit. Record.",
+    "voice": "Here is a deterministic replay of fifty agent steps. The policy checks each request, reserves the maximum cost, and records the actual result and spend."
+  },
+  {
+    "title": "Replay metrics",
+    "caption": "50 simulated steps · 0.058 USDC virtual spend",
+    "voice": "The fifty step replay reports zero point zero five eight USDC of virtual spend. The dashboard labels this as simulation, with zero on chain settlements."
+  },
+  {
+    "title": "On-chain sandbox payment",
+    "caption": "One MPP channel · two cumulative vouchers",
+    "voice": "Now we open a recorded Surfpool sandbox run. One payment channel handled two cumulative vouchers: one thousand two hundred fifty, then seven hundred fifty USDC base units."
+  },
+  {
+    "title": "Confirmed settlement",
+    "caption": "0.060 deposited · 0.002 spent · 0.058 refunded",
+    "voice": "The channel deposited zero point zero six USDC, spent zero point zero zero two, and refunded zero point zero five eight. Its single closing settlement was finalized on the sandbox."
+  },
+  {
+    "title": "Business model and next step",
+    "caption": "Metered provider payments with a proposed routing fee",
+    "voice": "LoopRail could earn a small routing fee while providers receive metered USDC. This video shows a simulated agent run and a separate confirmed sandbox payment. A live end to end agent run is the next integration step."
+  }
+]

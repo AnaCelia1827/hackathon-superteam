@@ -34,34 +34,41 @@ export async function anchorChainFromEnv(): Promise<ChainPort> {
     async open(input) {
       const session = addresses(input);
       const signature = await (baseProgram.methods as any)
-        .initSession([...Buffer.from(input.session_id, "hex")], [...Buffer.from(input.policy_hash, "hex")], new anchor.BN(input.budget_usdc_base_units), authority.publicKey)
+        .initSession(
+          [...Buffer.from(input.session_id, "hex")],
+          [...Buffer.from(input.policy_hash, "hex")],
+          authority.publicKey,
+          new anchor.BN(input.budget_usdc_base_units),
+          input.provider_pubkeys.map(key => new web3.PublicKey(key)),
+          input.provider_allocations_usdc_base_units.map(amount => new anchor.BN(amount)),
+        )
         .accounts({ owner: owner.publicKey, session, systemProgram: web3.SystemProgram.programId }).rpc();
       return { address: session.toBase58(), signature };
     },
     async delegate(input, address) {
       addresses(input);
-      return (baseProgram.methods as any).delegateSession()
-        .accounts({ payer: owner.publicKey, session: pda(address) })
+      return (baseProgram.methods as any).delegateSession([...Buffer.from(input.session_id, "hex")])
+        .accounts({ owner: owner.publicKey, session: pda(address) })
         .remainingAccounts([{ pubkey: validator, isSigner: false, isWritable: false }]).rpc();
     },
     async record(input, address, step) {
       const tool = input.tools.indexOf(step.tool);
       const provider = input.providers.indexOf(step.provider);
       if (tool < 0 || provider < 0) throw new Error("Unknown tool or provider");
-      const outcome = { success: 0, error: 1, denied: 2, cache_hit: 3 }[step.outcome];
+      const outcome = { success: 0, error: 1, denied: 3, cache_hit: 0 }[step.outcome];
       return (erProgram.methods as any)
-        .recordStep(step.step_index, tool, provider, new anchor.BN(step.cost_usdc_base_units), step.provider_latency_ms, outcome, step.cache_hit)
+        .recordStep(owner.publicKey, [...Buffer.from(input.session_id, "hex")], step.step_index, tool, provider, new anchor.BN(step.cost_usdc_base_units), step.provider_latency_ms, outcome, step.cache_hit)
         .accounts({ authority: authority.publicKey, session: pda(address) }).rpc();
     },
     count,
-    async checkpoint(_input, address) {
-      return (erProgram.methods as any).checkpoint().accounts({ payer: authority.publicKey, session: pda(address) }).rpc();
+    async checkpoint(input, address) {
+      return (erProgram.methods as any).checkpoint(owner.publicKey, [...Buffer.from(input.session_id, "hex")]).accounts({ payer: authority.publicKey, session: pda(address) }).rpc();
     },
-    async close(_input, address) {
-      return (erProgram.methods as any).closeAndUndelegate().accounts({ payer: authority.publicKey, session: pda(address) }).rpc();
+    async close(input, address) {
+      return (erProgram.methods as any).closeAndUndelegate(owner.publicKey, [...Buffer.from(input.session_id, "hex")]).accounts({ payer: authority.publicKey, session: pda(address) }).rpc();
     },
-    async abort(_input, address) {
-      return (erProgram.methods as any).abort().accounts({ authority: authority.publicKey, session: pda(address) }).rpc();
+    async abort(input, address) {
+      return (erProgram.methods as any).abort(owner.publicKey, [...Buffer.from(input.session_id, "hex")]).accounts({ signer: authority.publicKey, session: pda(address) }).rpc();
     },
   };
 }

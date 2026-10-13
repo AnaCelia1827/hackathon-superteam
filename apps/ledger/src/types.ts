@@ -23,6 +23,8 @@ export type OpenSession = {
   authority: string;
   tools: string[];
   providers: string[];
+  provider_pubkeys: string[];
+  provider_allocations_usdc_base_units: number[];
 };
 
 export interface ChainPort {

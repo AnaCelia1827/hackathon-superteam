@@ -85,6 +85,8 @@ dt, dd { font-size: 12px; }
 dt { color: #8a998b; }
 dd { margin: 0; color: #3d4a3e; font-weight: 700; text-align: right; }
 .steps-panel { margin-top: 18px; }
+.settlement-panel { margin-top: 18px; }
+.settlement-panel .signature { max-width: 70%; overflow-wrap: anywhere; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
 th { padding: 13px 10px; border-bottom: 1px solid #e9eee6; color: #9aa69a; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }

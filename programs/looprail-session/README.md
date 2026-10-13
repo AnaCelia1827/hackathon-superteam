@@ -10,7 +10,7 @@ base layer + MagicBlock Ephemeral Rollup (ER). See `docs/adr/ADR-3-pda-model.md`
   `spent`, `reserved`, `step_count`, `status`, `opened_at`, `closed_at`, `channel_count`,
   `checkpoint_count`, `bump`, `channels[8]` (`provider`, `allocation`, `spent`), and a
   `steps[64]` ring buffer (`step_idx`, `tool_idx`, `provider_idx`, `cost`, `latency_ms`, `outcome`,
-  `cache_hit`). ~1.85 KB; rent ≈ 0.013 SOL.
+  `cache_hit`). Measure account size and rent from the built program on the target validator.
 
 ## Instructions
 
@@ -27,7 +27,7 @@ base layer + MagicBlock Ephemeral Rollup (ER). See `docs/adr/ADR-3-pda-model.md`
 
 ```bash
 anchor build
-# logic tests (bankrun, no validator):
+# base-layer logic tests (requires a running local validator and deployed program):
 anchor test --skip-local-validator
 # ER integration (requires base validator + ER running, see scripts/local-env.sh):
 RUN_ER_TESTS=1 . ./scripts/local-env.sh && npx ts-mocha -p ./tsconfig.json -t 1000000 tests/session-er.ts
