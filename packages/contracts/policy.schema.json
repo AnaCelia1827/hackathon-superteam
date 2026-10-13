@@ -10,6 +10,8 @@
     "budget_usdc_base_units": { "type": "integer", "minimum": 0 },
     "max_steps": { "type": "integer", "minimum": 1 },
     "max_retries_per_step": { "type": "integer", "minimum": 0 },
+    "retry_backoff_ms": { "type": "integer", "minimum": 0 },
+    "max_repeated_calls": { "type": "integer", "minimum": 1 },
     "max_error_rate": { "type": "number", "minimum": 0, "maximum": 1 },
     "kill_switch_budget_ratio": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
     "provider_limits": {
@@ -22,7 +24,8 @@
         "properties": {
           "allocation_usdc_base_units": { "type": "integer", "minimum": 0 },
           "max_price_per_call_usdc_base_units": { "type": "integer", "minimum": 0 },
-          "cache_ttl_seconds": { "type": "integer", "minimum": 0 }
+          "cache_ttl_seconds": { "type": "integer", "minimum": 0 },
+          "fallback_provider": { "type": "string", "minLength": 1 }
         }
       }
     }

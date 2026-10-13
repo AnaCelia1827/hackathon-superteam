@@ -1,6 +1,6 @@
 # LoopRail
 
-Initial monorepo structure. The contracts in `packages/contracts/` should be agreed on before integration work.
+Monorepo for the LoopRail agent runtime, local dashboard, shared contracts, and planned Solana payment services.
 
 | Path | Owner | Purpose |
 | --- | --- | --- |
@@ -9,7 +9,7 @@ Initial monorepo structure. The contracts in `packages/contracts/` should be agr
 | `apps/ledger-service/` | Person A | MagicBlock integration API |
 | `apps/providers/` | Person A | Paid demo APIs |
 | `packages/contracts/` | Both | Shared schemas and examples |
-| `packages/sdk-python/` | Person B | Public Python SDK |
+| `packages/sdk-python/` | Person B | SDK packaging notes; public API is installed from `apps/runtime` |
 | `programs/looprail-session/` | Person A | Anchor program |
 | `scenarios/market-intelligence/` | Person B | Agent scenario |
 | `scenarios/replay/` | Person B | Recorded responses for the demo |
@@ -22,4 +22,4 @@ The [implementation plan](looprail_implementation_plan.md) is in English. The or
 
 ## Person B prototype
 
-The Python runtime executes a simulated 50-step session, and the local dashboard reads the generated events. See [apps/runtime/README.md](apps/runtime/README.md) and [apps/dashboard/README.md](apps/dashboard/README.md) for commands. On-chain integration and real payments depend on Person A's tasks.
+The Python runtime executes a deterministic 50-step session in mock or replay mode. The local dashboard streams step and budget events over SSE and can abort a virtual session. See [apps/runtime/README.md](apps/runtime/README.md) and [apps/dashboard/README.md](apps/dashboard/README.md) for commands. The measured benchmark comparison is described in [benchmarks/README.md](benchmarks/README.md). On-chain integration and real payments depend on Person A's tasks.

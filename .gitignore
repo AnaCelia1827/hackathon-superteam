@@ -9,3 +9,5 @@ node_modules/
 .next/
 dist/
 build/
+*.egg-info/
+benchmarks/results/

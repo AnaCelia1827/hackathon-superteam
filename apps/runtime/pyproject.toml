@@ -3,7 +3,7 @@ name = "looprail-runtime"
 version = "0.1.0"
 description = "LoopRail Person B runtime and deterministic demo"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["rfc8785==0.1.4", "jsonschema==4.26.0"]
 
 [build-system]
 requires = ["setuptools>=68"]
