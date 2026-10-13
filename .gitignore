@@ -1,0 +1,25 @@
+# --- secrets / keys: never commit (plan J2) ---
+.env
+*.keypair.json
+id.json
+operator.json
+payer.json
+keys/
+
+# --- rust / anchor ---
+target/
+.anchor/
+.surfer/
+test-ledger/
+
+# --- node ---
+node_modules/
+dist/
+
+# --- python ---
+.venv/
+__pycache__/
+*.pyc
+
+# --- misc ---
+.DS_Store
