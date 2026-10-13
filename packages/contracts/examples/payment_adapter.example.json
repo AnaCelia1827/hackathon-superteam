@@ -1,0 +1,15 @@
+{
+  "adapter_id": "adapter-market-data-mpp",
+  "kind": "mpp_session",
+  "provider_id": "prov-market-data",
+  "currency": "USDC",
+  "decimals": 6,
+  "network": "solana_localnet",
+  "capabilities": {
+    "open": true,
+    "reserve": true,
+    "commit": true,
+    "release": true,
+    "close_all": true
+  }
+}

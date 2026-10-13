@@ -1,0 +1,206 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://looprail.local/schemas/v1/payment_adapter.schema.json",
+  "title": "PaymentAdapter",
+  "description": "Descriptor for a payment adapter plus its value objects. One adapter instance maps to one provider/channel. The channel lifecycle is open -> reserve -> commit|release -> close_all; amounts are USDC base units.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "adapter_id",
+    "kind",
+    "provider_id",
+    "currency",
+    "decimals",
+    "network",
+    "capabilities"
+  ],
+  "properties": {
+    "adapter_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "mpp_session",
+        "x402_upto"
+      ],
+      "description": "mpp_session is the default for repeated traffic; x402_upto for one-off metered calls."
+    },
+    "provider_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "currency": {
+      "const": "USDC"
+    },
+    "decimals": {
+      "const": 6
+    },
+    "network": {
+      "type": "string",
+      "enum": [
+        "solana_localnet",
+        "solana_devnet"
+      ]
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "open",
+        "reserve",
+        "commit",
+        "release",
+        "close_all"
+      ],
+      "properties": {
+        "open": {
+          "type": "boolean"
+        },
+        "reserve": {
+          "type": "boolean"
+        },
+        "commit": {
+          "type": "boolean"
+        },
+        "release": {
+          "type": "boolean"
+        },
+        "close_all": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "usdc_base_units": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "USDC base units (6 decimals). 1 USDC = 1000000. Never a float."
+    },
+    "Channel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "channel_id",
+        "provider_id",
+        "allocation",
+        "spent",
+        "reserved",
+        "status"
+      ],
+      "properties": {
+        "channel_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provider_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "allocation": {
+          "$ref": "#/$defs/usdc_base_units",
+          "description": "Deposited ceiling for this provider."
+        },
+        "spent": {
+          "$ref": "#/$defs/usdc_base_units",
+          "description": "Committed amount."
+        },
+        "reserved": {
+          "$ref": "#/$defs/usdc_base_units",
+          "description": "Held-but-not-committed amount."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "opening",
+            "open",
+            "closing",
+            "closed",
+            "failed"
+          ]
+        }
+      }
+    },
+    "Reservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reservation_id",
+        "channel_id",
+        "max_amount",
+        "status"
+      ],
+      "properties": {
+        "reservation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "channel_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "max_amount": {
+          "$ref": "#/$defs/usdc_base_units",
+          "description": "Upper bound held before the call; commit(actual) must not exceed it."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "held",
+            "committed",
+            "released"
+          ]
+        }
+      }
+    },
+    "Settlement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "channel_id",
+        "provider_id",
+        "usdc_deposited",
+        "usdc_spent",
+        "usdc_refunded",
+        "settlements",
+        "signature"
+      ],
+      "properties": {
+        "channel_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provider_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "usdc_deposited": {
+          "$ref": "#/$defs/usdc_base_units"
+        },
+        "usdc_spent": {
+          "$ref": "#/$defs/usdc_base_units"
+        },
+        "usdc_refunded": {
+          "$ref": "#/$defs/usdc_base_units",
+          "description": "Must equal usdc_deposited - usdc_spent."
+        },
+        "settlements": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of on-chain settlement transactions for this channel."
+        },
+        "signature": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Base58 settlement transaction signature, or null when not yet on-chain."
+        }
+      }
+    }
+  }
+}

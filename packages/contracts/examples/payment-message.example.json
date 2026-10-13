@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "operation": "open",
+  "provider": "market_data",
+  "allocation_usdc_base_units": 1000000
+}

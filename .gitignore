@@ -1,13 +1,32 @@
-__pycache__/
-*.py[cod]
-.venv/
+# Secrets and keys
 .env
 .env.*
 !.env.example
-.pytest_cache/
+*.keypair.json
+id.json
+operator.json
+payer.json
+keys/
+
+# Rust, Anchor, and local validators
+target/
+.anchor/
+.surfer/
+test-ledger/
+
+# Node
 node_modules/
 .next/
 dist/
 build/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
 *.egg-info/
+.pytest_cache/
+
+# Generated benchmark output and OS files
 benchmarks/results/
+.DS_Store

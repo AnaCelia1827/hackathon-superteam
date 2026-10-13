@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://looprail.local/contracts/v1/payment-message.schema.json",
   "title": "LoopRail PaymentAdapter message v1",
-  "description": "Envelope de comando entre runtime e adapter. As respostas reais e os erros serão fechados com A7.",
+  "description": "Command envelope between the runtime and payment adapter. Real responses and errors will be finalized with A7.",
   "oneOf": [
     {
       "type": "object",
