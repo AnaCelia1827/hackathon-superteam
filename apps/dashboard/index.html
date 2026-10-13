@@ -18,9 +18,8 @@
           <a href="#steps">Steps</a>
         </nav>
         <div class="header-profile">
-          <span class="environment-dot"></span><span class="environment-label">Local environment</span>
+          <span class="environment-dot" aria-hidden="true"></span><span class="environment-label">Local environment</span>
           <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false">Dark mode</button>
-          <span class="avatar">L</span>
         </div>
       </header>
       <main id="overview">
@@ -30,7 +29,7 @@
             <p>Track agent execution, latency, and spending in one view.</p>
           </div>
           <div class="header-actions">
-            <span class="status"><span class="status-dot"></span><span id="run-status">Local simulation</span></span>
+            <span class="status" data-status="idle" role="status"><span class="status-dot" aria-hidden="true"></span><span id="run-status">Loading demo</span></span>
             <button id="start-session" type="button" disabled>Run simulation</button>
             <button id="replay-session" type="button" disabled>Run replay</button>
             <button id="end-session" type="button" disabled>End session</button>
@@ -54,7 +53,7 @@
         </section>
         <div class="insights-grid">
           <section class="panel chart-panel" id="performance">
-            <div class="panel-heading"><div><div class="eyebrow">PERFORMANCE</div><h2>Latency by step</h2><p>Provider time for each simulated call.</p></div><span class="pill">50 steps</span></div>
+            <div class="panel-heading"><div><h2>Latency by step</h2><p>Provider time for each simulated call.</p></div><span class="pill" id="chart-step-total">50 steps</span></div>
             <div class="chart-wrap">
               <div class="chart-scale"><span id="chart-max">—</span><span id="chart-mid">—</span><span>0 ms</span></div>
               <svg viewBox="0 0 640 220" preserveAspectRatio="none" role="img" aria-label="Latency by step chart">
@@ -63,12 +62,13 @@
                 <line x1="0" y1="200" x2="640" y2="200" class="grid-line" />
                 <path id="latency-area" class="chart-area" d="" />
                 <path id="latency-line" class="chart-line" d="" />
+                <circle id="latency-point" class="chart-point" r="5" hidden />
               </svg>
+              <span id="chart-empty" class="chart-empty" hidden>Waiting for the first step…</span>
             </div>
             <div class="chart-axis"><span>Step 1</span><span>Step 25</span><span>Step 50</span></div>
           </section>
           <section class="highlight-panel" aria-label="Session budget">
-            <div class="eyebrow">SPEND POLICY ENGINE</div>
             <div><h2>Spending<br />under control<span>.</span></h2><p>Reserve before each call. Record actual spend after the response.</p></div>
             <div class="highlight-bottom">
               <div><span>Used</span><strong id="budget-percent">—</strong></div>
@@ -95,7 +95,8 @@
         <section class="panel steps-panel" id="steps">
           <div class="panel-heading"><div><h2>Step timeline</h2><p>Policy decision, cost, and latency for every step.</p></div><span class="pill" id="step-total">— steps</span></div>
           <div class="table-wrap"><table>
-            <thead><tr><th>Step</th><th>Tool</th><th>Provider</th><th>Outcome</th><th>Policy reason</th><th>Cost</th><th>Latency</th></tr></thead>
+            <caption class="sr-only">Simulated steps and their policy decisions</caption>
+            <thead><tr><th scope="col">Step</th><th scope="col">Tool</th><th scope="col">Provider</th><th scope="col">Outcome</th><th scope="col">Policy reason</th><th scope="col">Cost</th><th scope="col">Latency</th></tr></thead>
             <tbody id="step-rows"></tbody>
           </table></div>
           <div class="table-pagination" aria-label="Step pagination">

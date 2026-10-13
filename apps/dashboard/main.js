@@ -31,6 +31,7 @@ function render() {
   text("transactions", String(metrics.onchain_transactions));
   text("source", metrics.source);
   text("step-total", `${events.length} steps`);
+  text("chart-step-total", `${events.length} steps`);
   text("authorized", usdc(metrics.usdc_authorized_base_units));
   text("reserved", usdc(metrics.usdc_reserved_base_units));
   text("live-spent", usdc(spent));
@@ -40,6 +41,8 @@ function render() {
   document.getElementById("budget-fill").style.width = `${Math.min(100, ratio * 100)}%`;
 
   const latencies = events.map((e) => e.provider_latency_ms);
+  document.getElementById("chart-empty").hidden = events.length > 0;
+  document.querySelector(".chart-wrap svg").setAttribute("aria-label", `Latency by step chart, ${events.length} simulated steps, p95 ${metrics.provider_latency_p95_ms} milliseconds`);
   const maximum = Math.max(20, Math.ceil(Math.max(0, ...latencies) / 20) * 20);
   text("chart-max", `${maximum} ms`);
   text("chart-mid", `${maximum / 2} ms`);
@@ -49,12 +52,24 @@ function render() {
   ]);
   const line = points.map(([x, y], i) => `${i ? "L" : "M"}${x} ${y}`).join(" ");
   document.getElementById("latency-line").setAttribute("d", line);
-  document.getElementById("latency-area").setAttribute("d", line ? `${line} L640 200 L0 200 Z` : "");
+  document.getElementById("latency-area").setAttribute("d", points.length > 1 ? `${line} L640 200 L0 200 Z` : "");
+  const firstPoint = document.getElementById("latency-point");
+  firstPoint.hidden = points.length !== 1;
+  if (points.length === 1) {
+    firstPoint.setAttribute("cx", points[0][0]);
+    firstPoint.setAttribute("cy", points[0][1]);
+  }
 
   const totals = new Map();
   for (const event of events) totals.set(event.provider, (totals.get(event.provider) || 0) + event.cost_usdc_base_units);
   const bars = document.getElementById("provider-bars");
   bars.replaceChildren();
+  if (!totals.size) {
+    const empty = document.createElement("p");
+    empty.className = "empty-state";
+    empty.textContent = "Provider spend appears as steps complete.";
+    bars.append(empty);
+  }
   const largest = Math.max(1, ...totals.values());
   for (const [provider, total] of totals) {
     const row = document.createElement("div"); row.className = "provider-row";
@@ -72,6 +87,15 @@ function render() {
   page = Math.min(page, count);
   const start = (page - 1) * size, rows = document.getElementById("step-rows");
   rows.replaceChildren();
+  if (!events.length) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 7;
+    cell.className = "empty-state";
+    cell.textContent = "No steps yet. Start a simulation to see policy decisions.";
+    row.append(cell);
+    rows.append(row);
+  }
   for (const event of events.slice(start, start + size)) {
     const row = document.createElement("tr");
     const values = [String(event.step_index + 1).padStart(2, "0"), event.tool, event.provider,
@@ -99,17 +123,19 @@ document.getElementById("page-next").addEventListener("click", () => { page++; r
 
 function setStatus(status) {
   const running = status === "running";
-  text("run-status", running ? "Simulation running" : status === "aborted" ? "Simulation aborted" : "Local simulation");
-  document.getElementById("start-session").disabled = !serverAvailable || running;
-  document.getElementById("replay-session").disabled = !serverAvailable || running;
+  const labels = { idle: "Demo ready", starting: "Starting simulation", running: "Simulation running", closed: "Simulation complete", aborted: "Simulation aborted", error: "Session error", static: "Preview only" };
+  text("run-status", labels[status] || "Demo ready");
+  document.querySelector(".status").dataset.status = status;
+  document.getElementById("start-session").disabled = !serverAvailable || running || status === "starting";
+  document.getElementById("replay-session").disabled = !serverAvailable || running || status === "starting";
   document.getElementById("end-session").disabled = !running;
 }
-function partialMetrics(events, mode) {
+function partialMetrics(events, mode, baseMetrics = dashboard.metrics) {
   const spent = events.reduce((sum, event) => sum + event.cost_usdc_base_units, 0);
   const latencies = events.map((e) => e.provider_latency_ms).filter(Boolean).sort((a, b) => a - b);
-  return { ...dashboard.metrics, session_id: `${mode}-50`, mode, steps: events.length,
-    usdc_spent_base_units: Math.max(spent, dashboard.metrics.usdc_spent_base_units),
-    usdc_reserved_base_units: dashboard.metrics.usdc_reserved_base_units,
+  return { ...baseMetrics, session_id: `${mode}-50`, mode, steps: events.length,
+    usdc_spent_base_units: Math.max(spent, baseMetrics.usdc_spent_base_units),
+    usdc_reserved_base_units: baseMetrics.usdc_reserved_base_units,
     usdc_authorized_base_units: 0,
     duration_ms: events.length ? Date.parse(events.at(-1).occurred_at) - Date.parse("2026-01-01T00:00:00Z") : 0,
     provider_latency_p95_ms: latencies[Math.ceil(latencies.length * .95) - 1] || 0,
@@ -125,7 +151,9 @@ function connectStream(mode, since = 0) {
     render();
   });
   stream.addEventListener("step", ({ data }) => {
-    dashboard.events.push(JSON.parse(data));
+    const event = JSON.parse(data);
+    if (dashboard.events.some((existing) => existing.step_index === event.step_index)) return;
+    dashboard.events.push(event);
     dashboard.metrics = partialMetrics(dashboard.events, mode);
     render();
   });
@@ -138,12 +166,27 @@ function connectStream(mode, since = 0) {
   });
 }
 async function start(mode) {
+  setStatus("starting");
   const response = await fetch("/api/start", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode }) });
   if (!response.ok) throw new Error("Could not start the local session.");
-  dashboard = { events: [], metrics: partialMetrics([], mode) };
+  clearError();
+  const initialMetrics = { ...dashboard.metrics, usdc_spent_base_units: 0, usdc_reserved_base_units: 0 };
+  dashboard = { events: [], metrics: partialMetrics([], mode, initialMetrics) };
   page = 1; render(); setStatus("running"); connectStream(mode);
 }
-function showError(error) { document.querySelector(".notice span").textContent = error.message; }
+function clearError() {
+  const notice = document.querySelector(".notice");
+  notice.classList.remove("notice-error");
+  notice.querySelector("strong").textContent = "Simulated data";
+  notice.querySelector("span").textContent = "Costs and latencies come from a reproducible scenario. No USDC was authorized or settled on Solana.";
+}
+function showError(error, recovery = "Check the local dashboard server and try again.") {
+  const notice = document.querySelector(".notice");
+  notice.classList.add("notice-error");
+  notice.querySelector("strong").textContent = "Session error";
+  notice.querySelector("span").textContent = `${error.message} ${recovery}`;
+  setStatus("error");
+}
 document.getElementById("start-session").addEventListener("click", () => start("mock").catch(showError));
 document.getElementById("replay-session").addEventListener("click", () => start("replay").catch(showError));
 document.getElementById("end-session").addEventListener("click", () => fetch("/api/abort", { method: "POST" }).catch(showError));
@@ -152,19 +195,26 @@ async function loadDashboard() {
   const response = await fetch("./data/mock-50.json");
   if (!response.ok) throw new Error("Could not load the demo scenario.");
   dashboard = await response.json(); render();
+  setStatus("static");
+  document.querySelector(".notice strong").textContent = "Saved preview";
+  document.querySelector(".notice span").textContent = "Start the local dashboard server to run a session. The saved costs and latencies are simulated; no USDC was settled on Solana.";
   try {
     const stateResponse = await fetch("/api/state");
     if (!stateResponse.ok) return;
     serverAvailable = true;
+    clearError();
     const state = await stateResponse.json();
     if (state.result?.metrics) dashboard = state.result;
-    else if (state.events.length) dashboard = { events: state.events, metrics: partialMetrics(state.events, state.mode) };
+    else if (state.events.length) {
+      const initialMetrics = { ...dashboard.metrics, usdc_spent_base_units: 0, usdc_reserved_base_units: 0 };
+      dashboard = { events: state.events, metrics: partialMetrics(state.events, state.mode, initialMetrics) };
+    }
     if (state.budget) {
       dashboard.metrics.usdc_reserved_base_units = state.budget.reserved_usdc_base_units;
       dashboard.metrics.usdc_spent_base_units = state.budget.spent_usdc_base_units;
     }
     if (state.status === "running") connectStream(state.mode, state.message_index);
     setStatus(state.status); render();
-  } catch { /* Static mode remains usable. */ }
+  } catch { /* The saved scenario remains available as a preview. */ }
 }
-loadDashboard().catch(showError);
+loadDashboard().catch((error) => showError(error, "Check the dashboard files and reload."));
