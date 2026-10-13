@@ -26,7 +26,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo
 RUN curl -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain "${RUST_VERSION}" --profile minimal \
       --no-modify-path \
- && rustup component add rustfmt clippy
+ && "${CARGO_HOME}/bin/rustup" component add rustfmt clippy \
+ && "${CARGO_HOME}/bin/rustc" --version
 ENV PATH="/usr/local/cargo/bin:${PATH}"
 
 # --- Solana / Agave CLI (pinned) ---
