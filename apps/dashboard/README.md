@@ -10,3 +10,5 @@ python -m http.server 8000
 ```
 
 Open `http://localhost:8000`. The dashboard labels the data as simulated, shows no fictitious settlement, and keeps the kill switch disabled until a live session and abort endpoint exist. The step timeline shows 10 entries per page.
+
+Use the header button to switch between light and dark mode. The browser remembers the selected theme.
