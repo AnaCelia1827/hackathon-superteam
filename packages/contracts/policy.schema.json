@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://looprail.local/contracts/v1/policy.schema.json",
+  "title": "LoopRail Policy v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "budget_usdc_base_units", "max_steps", "provider_limits"],
+  "properties": {
+    "version": { "const": 1 },
+    "budget_usdc_base_units": { "type": "integer", "minimum": 0 },
+    "max_steps": { "type": "integer", "minimum": 1 },
+    "max_retries_per_step": { "type": "integer", "minimum": 0 },
+    "max_error_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+    "kill_switch_budget_ratio": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+    "provider_limits": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["allocation_usdc_base_units", "max_price_per_call_usdc_base_units"],
+        "properties": {
+          "allocation_usdc_base_units": { "type": "integer", "minimum": 0 },
+          "max_price_per_call_usdc_base_units": { "type": "integer", "minimum": 0 },
+          "cache_ttl_seconds": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}
