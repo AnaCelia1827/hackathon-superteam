@@ -125,7 +125,7 @@ class PolicyTests(unittest.TestCase):
             example_policy(), mock_registry(fail_attempts={0: {0}}),
         )
         result = asyncio.run(engine.run(MarketIntelligenceAgent()))
-        self.assertEqual(result["events"][0]["outcome"], "success")
+        self.assertEqual(result["events"][0]["outcome"], "ok")
         self.assertEqual(result["events"][0]["retry_count"], 1)
         self.assertEqual(result["events"][0]["retry_backoff_ms"], 100)
         self.assertEqual(result["metrics"]["usdc_spent_base_units"], 58000)
@@ -141,15 +141,15 @@ class PolicyTests(unittest.TestCase):
 
         engine = ExecutionEngine(example_policy(), mock_registry())
         result = asyncio.run(engine.run(RepeatingAgent()))
-        self.assertEqual([event["outcome"] for event in result["events"]], ["success", "cache_hit"])
+        self.assertEqual([event["outcome"] for event in result["events"]], ["ok", "ok"])
         self.assertEqual(result["metrics"]["usdc_spent_base_units"], 1000)
         self.assertEqual(result["report"]["outputs"], 2)
 
     def test_ledger_rejects_conflicting_replay_of_step(self):
         ledger = MockLedger()
         ledger.open("s1", "hash")
-        ledger.record_step("s1", {"step_index": 0, "outcome": "success"})
-        ledger.record_step("s1", {"step_index": 0, "outcome": "success"})
+        ledger.record_step("s1", {"step_index": 0, "outcome": "ok"})
+        ledger.record_step("s1", {"step_index": 0, "outcome": "ok"})
         with self.assertRaises(ValueError):
             ledger.record_step("s1", {"step_index": 0, "outcome": "error"})
 

@@ -21,8 +21,8 @@
     "retry_count": 0
   },
   "events": [
-    {"version": 1, "session_id": "4Vnh3sjFFBVnLY3eZfZoTT2SvueETxpCs1KcVvwKJsMY", "step_index": 0, "tool": "MPP voucher", "provider": "market_data", "outcome": "success", "reason": "voucher_committed", "cost_usdc_base_units": 1250, "provider_latency_ms": null, "looprail_overhead_ms": null, "cache_hit": false, "retry_count": 0, "retry_backoff_ms": 0, "occurred_at": null},
-    {"version": 1, "session_id": "4Vnh3sjFFBVnLY3eZfZoTT2SvueETxpCs1KcVvwKJsMY", "step_index": 1, "tool": "MPP voucher", "provider": "market_data", "outcome": "success", "reason": "voucher_committed", "cost_usdc_base_units": 750, "provider_latency_ms": null, "looprail_overhead_ms": null, "cache_hit": false, "retry_count": 0, "retry_backoff_ms": 0, "occurred_at": null}
+    {"version": 1, "session_id": "4Vnh3sjFFBVnLY3eZfZoTT2SvueETxpCs1KcVvwKJsMY", "step_index": 0, "tool": "MPP voucher", "provider": "market_data", "outcome": "ok", "reason": "voucher_committed", "cost_usdc_base_units": 1250, "provider_latency_ms": null, "looprail_overhead_ms": null, "cache_hit": false, "retry_count": 0, "retry_backoff_ms": 0, "occurred_at": null},
+    {"version": 1, "session_id": "4Vnh3sjFFBVnLY3eZfZoTT2SvueETxpCs1KcVvwKJsMY", "step_index": 1, "tool": "MPP voucher", "provider": "market_data", "outcome": "ok", "reason": "voucher_committed", "cost_usdc_base_units": 750, "provider_latency_ms": null, "looprail_overhead_ms": null, "cache_hit": false, "retry_count": 0, "retry_backoff_ms": 0, "occurred_at": null}
   ],
   "receipts": [
     {"provider": "market_data", "provider_id": "market_data", "channel_id": "4Vnh3sjFFBVnLY3eZfZoTT2SvueETxpCs1KcVvwKJsMY", "usdc_deposited": 60000, "usdc_spent": 2000, "usdc_refunded": 58000, "settlements": 1, "signature": "4Nsp59i3xDohh2ZiTkXWjmwDaZY2x4TY2rua5HwZj9G8ARSy2ioh7iERS3NyGZF43np72BXpisnNs6NHV9z4HtRc", "simulated": false, "network": "surfpool-sandbox", "confirmation_status": "finalized", "slot": 454713702}
