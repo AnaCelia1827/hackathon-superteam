@@ -1,10 +1,10 @@
-# Contratos v1
+# Contracts v1
 
-Arquivos compartilhados entre runtime, ledger, pagamentos e dashboard. Os valores monetários são inteiros em unidades base do USDC (6 casas decimais).
+Files shared by the runtime, ledger, payments, and dashboard. Monetary values are integers in USDC base units (6 decimals).
 
-- `policy.schema.json`: configuração da política.
-- `step-record.schema.json`: evento de cada passo.
-- `metrics.schema.json`: resumo de uma sessão.
-- `payment-message.schema.json`: mensagens trocadas com o adapter de pagamentos.
+- `policy.schema.json`: policy configuration.
+- `step-record.schema.json`: event for each step.
+- `metrics.schema.json`: session summary.
+- `payment-message.schema.json`: messages exchanged with the payment adapter.
 
-Os schemas descrevem a API proposta para o MVP. A decisão de linguagem (ADR-1) e o mapeamento para pay-kit/Anchor ainda dependem dos spikes A2/A3.
+The schemas describe the proposed MVP API. Python was selected for the runtime, with a TypeScript ledger service. Mapping these contracts to pay-kit and Anchor still depends on spikes A2/A3.

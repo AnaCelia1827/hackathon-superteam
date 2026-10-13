@@ -1,25 +1,25 @@
 # LoopRail
 
-Estrutura inicial do monorepo. Os contratos em `packages/contracts/` devem ser definidos em conjunto antes das integrações.
+Initial monorepo structure. The contracts in `packages/contracts/` should be agreed on before integration work.
 
-| Caminho | Responsável | Finalidade |
+| Path | Owner | Purpose |
 | --- | --- | --- |
-| `apps/dashboard/` | Pessoa B | Interface e métricas da demo |
-| `apps/runtime/` | Pessoa B | Loop do agente, policy e ferramentas |
-| `apps/ledger-service/` | Pessoa A | API de integração com MagicBlock |
-| `apps/providers/` | Pessoa A | APIs pagas usadas pela demo |
-| `packages/contracts/` | Ambos | Schemas e exemplos compartilhados |
-| `packages/sdk-python/` | Pessoa B | SDK público, sujeito à decisão de linguagem |
-| `programs/looprail-session/` | Pessoa A | Programa Anchor |
-| `scenarios/market-intelligence/` | Pessoa B | Fluxo do agente |
-| `scenarios/replay/` | Pessoa B | Respostas gravadas para a demo |
-| `benchmarks/` | Ambos | Runners e resultados medidos |
-| `docs/adr/` | Ambos | Decisões de arquitetura |
-| `docs/demo/` | Ambos | Roteiro e material da apresentação |
-| `infra/` | Pessoa A | Ambiente local e serviços de apoio |
+| `apps/dashboard/` | Person B | Demo interface and metrics |
+| `apps/runtime/` | Person B | Agent loop, policy, and tools |
+| `apps/ledger-service/` | Person A | MagicBlock integration API |
+| `apps/providers/` | Person A | Paid demo APIs |
+| `packages/contracts/` | Both | Shared schemas and examples |
+| `packages/sdk-python/` | Person B | Public Python SDK |
+| `programs/looprail-session/` | Person A | Anchor program |
+| `scenarios/market-intelligence/` | Person B | Agent scenario |
+| `scenarios/replay/` | Person B | Recorded responses for the demo |
+| `benchmarks/` | Both | Runners and measured results |
+| `docs/adr/` | Both | Architecture decisions |
+| `docs/demo/` | Both | Demo script and materials |
+| `infra/` | Person A | Local environment and support services |
 
-O PDF original da ideia está na raiz do repositório.
+The [implementation plan](looprail_implementation_plan.md) is in English. The original ideation PDF remains in Portuguese at the repository root.
 
-## Protótipo da Pessoa B
+## Person B prototype
 
-O runtime Python já executa uma sessão simulada de 50 passos e o dashboard local lê os eventos gerados. Veja [apps/runtime/README.md](apps/runtime/README.md) e [apps/dashboard/README.md](apps/dashboard/README.md) para os comandos. Integrações on-chain e pagamentos reais dependem das tarefas da Pessoa A.
+The Python runtime executes a simulated 50-step session, and the local dashboard reads the generated events. See [apps/runtime/README.md](apps/runtime/README.md) and [apps/dashboard/README.md](apps/dashboard/README.md) for commands. On-chain integration and real payments depend on Person A's tasks.
