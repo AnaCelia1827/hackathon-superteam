@@ -26,9 +26,11 @@ One program `looprail_session` owns a single fixed-size `Session` PDA per sessio
   - `policy_hash: [u8; 32]` — RFC 8785 canonical-JSON digest.
   - `budget_total / spent / reserved: u64` — USDC base units.
   - `step_count: u32`, `status: u8` (Open/Closing/Closed/Aborted), `opened_at / closed_at: i64`.
-  - `channels[N]` with `N = 8`: `{ provider: Pubkey, spent: u64 }` per provider.
-  - `steps[K]` ring buffer with `K = 64`; each entry `{ tool_idx: u8, provider_idx: u8, cost: u64,
-    latency_ms: u32, outcome: u8, cache_hit: bool }`. `K = 64` covers the 50-step demo with headroom.
+  - `channels[N]` with `N = 8`: `{ provider: Pubkey, allocation: u64, spent: u64 }` per provider.
+  - `steps[K]` ring buffer with `K = 64`; each entry `{ step_idx: u32, tool_idx: u8, provider_idx: u8,
+    cost: u64, latency_ms: u32, outcome: u8, cache_hit: bool }`. `K = 64` covers the 50-step demo with
+    headroom. `step_idx` is stored in the entry (added at A5) so the ring wrap stays auditable; the
+    per-provider `allocation` ceiling is enforced in `record_step`.
 
 ### Instructions
 
