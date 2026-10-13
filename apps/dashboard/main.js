@@ -20,16 +20,37 @@ function render() {
   const { events, metrics } = dashboard;
   const spent = metrics.usdc_spent_base_units;
   const budget = metrics.policy_budget_usdc_base_units;
+  const settled = metrics.source === "confirmed-surfpool-sandbox";
+  text("notice-title", settled ? "Recorded on-chain sandbox run" : "Simulated data");
+  document.querySelector(".notice span").textContent = settled
+    ? "Two MPP vouchers and one settlement were confirmed on Surfpool. This is a saved run, not a live agent session."
+    : "Costs and latencies come from a reproducible scenario. No USDC was authorized or settled on Solana.";
+  text("spend-label", settled ? "Settled spend" : "Simulated spend");
+  text("budget-label", settled ? "channel deposit" : "policy budget");
+  text("duration-label", settled ? "Measured duration" : "Total simulated latency");
+  text("settlement-caption", settled ? "one close transaction on Surfpool" : "no channel opened in this simulation");
+  text("latency-caption", settled ? "Latency was not recorded for these MPP vouchers." : "Provider time for each simulated call.");
+  text("steps-caption", settled ? "Cumulative payment vouchers accepted by the provider." : "Policy decision, cost, and latency for every step.");
+  text("chart-step-count", `${events.length} steps`);
   text("step-count", String(events.length));
   text("spent", usdc(spent));
   text("budget", usdc(budget));
-  text("duration", `${(metrics.duration_ms / 1000).toLocaleString("en-US", { maximumFractionDigits: 2 })} s`);
-  text("p95", `${metrics.provider_latency_p95_ms} ms`);
+  text("duration", metrics.duration_ms == null ? "—" : `${(metrics.duration_ms / 1000).toLocaleString("en-US", { maximumFractionDigits: 2 })} s`);
+  text("p95", metrics.provider_latency_p95_ms == null ? "—" : `${metrics.provider_latency_p95_ms} ms`);
   text("settlements", String(metrics.settlements));
   text("session-id", metrics.session_id);
   text("mode", metrics.mode);
   text("transactions", String(metrics.onchain_transactions));
   text("source", metrics.source);
+  const receipt = settled ? dashboard.receipts?.[0] : null;
+  document.getElementById("settlement-panel").hidden = !receipt;
+  if (receipt) {
+    text("settlement-deposited", usdc(receipt.usdc_deposited));
+    text("settlement-spent", usdc(receipt.usdc_spent));
+    text("settlement-refunded", usdc(receipt.usdc_refunded));
+    text("settlement-status", `${receipt.confirmation_status} at slot ${receipt.slot}`);
+    text("settlement-signature", receipt.signature);
+  }
   text("step-total", `${events.length} steps`);
   text("authorized", usdc(metrics.usdc_authorized_base_units));
   text("reserved", usdc(metrics.usdc_reserved_base_units));
@@ -39,10 +60,10 @@ function render() {
   text("budget-percent", `${(ratio * 100).toLocaleString("en-US", { maximumFractionDigits: 2 })}%`);
   document.getElementById("budget-fill").style.width = `${Math.min(100, ratio * 100)}%`;
 
-  const latencies = events.map((e) => e.provider_latency_ms);
+  const latencies = settled ? [] : events.map((e) => e.provider_latency_ms ?? 0);
   const maximum = Math.max(20, Math.ceil(Math.max(0, ...latencies) / 20) * 20);
-  text("chart-max", `${maximum} ms`);
-  text("chart-mid", `${maximum / 2} ms`);
+  text("chart-max", settled ? "—" : `${maximum} ms`);
+  text("chart-mid", settled ? "—" : `${maximum / 2} ms`);
   const points = latencies.map((latency, index) => [
     ((index / Math.max(1, latencies.length - 1)) * 640).toFixed(1),
     (200 - latency / maximum * 180).toFixed(1),
@@ -75,7 +96,7 @@ function render() {
   for (const event of events.slice(start, start + size)) {
     const row = document.createElement("tr");
     const values = [String(event.step_index + 1).padStart(2, "0"), event.tool, event.provider,
-      event.outcome, event.reason.replaceAll("_", " "), usdc(event.cost_usdc_base_units), `${event.provider_latency_ms} ms`];
+      event.outcome, event.reason.replaceAll("_", " "), usdc(event.cost_usdc_base_units), event.provider_latency_ms == null ? "—" : `${event.provider_latency_ms} ms`];
     values.forEach((value, index) => {
       const cell = document.createElement("td");
       if (index === 3) {
@@ -102,6 +123,7 @@ function setStatus(status) {
   text("run-status", running ? "Simulation running" : status === "aborted" ? "Simulation aborted" : "Local simulation");
   document.getElementById("start-session").disabled = !serverAvailable || running;
   document.getElementById("replay-session").disabled = !serverAvailable || running;
+  document.getElementById("settled-session").disabled = running;
   document.getElementById("end-session").disabled = !running;
 }
 function partialMetrics(events, mode) {
@@ -146,6 +168,16 @@ async function start(mode) {
 function showError(error) { document.querySelector(".notice span").textContent = error.message; }
 document.getElementById("start-session").addEventListener("click", () => start("mock").catch(showError));
 document.getElementById("replay-session").addEventListener("click", () => start("replay").catch(showError));
+document.getElementById("settled-session").addEventListener("click", async () => {
+  try {
+    const response = await fetch("./data/settled-sandbox.json", { cache: "no-store" });
+    if (!response.ok) throw new Error("Could not load the recorded sandbox settlement.");
+    dashboard = await response.json();
+    page = 1;
+    render();
+    text("run-status", "Recorded sandbox settlement");
+  } catch (error) { showError(error); }
+});
 document.getElementById("end-session").addEventListener("click", () => fetch("/api/abort", { method: "POST" }).catch(showError));
 
 async function loadDashboard() {

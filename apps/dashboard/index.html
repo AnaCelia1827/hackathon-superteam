@@ -33,11 +33,12 @@
             <span class="status"><span class="status-dot"></span><span id="run-status">Local simulation</span></span>
             <button id="start-session" type="button" disabled>Run simulation</button>
             <button id="replay-session" type="button" disabled>Run replay</button>
+            <button id="settled-session" type="button">View on-chain run</button>
             <button id="end-session" type="button" disabled>End session</button>
           </div>
         </header>
         <section class="notice" role="status">
-          <strong>Simulated data</strong>
+          <strong id="notice-title">Simulated data</strong>
           <span>Costs and latencies come from a reproducible scenario. No USDC was authorized or settled on Solana.</span>
         </section>
         <section class="budget-state" aria-label="Budget accounting">
@@ -48,13 +49,13 @@
         </section>
         <section class="metrics-grid" aria-label="Key metrics">
           <article class="metric"><span>Steps completed</span><strong id="step-count">—</strong><small>in one session</small></article>
-          <article class="metric"><span>Simulated spend</span><strong id="spent">—</strong><small>of <span id="budget">—</span> policy budget</small></article>
-          <article class="metric"><span>Total simulated latency</span><strong id="duration">—</strong><small>provider p95: <span id="p95">—</span></small></article>
-          <article class="metric"><span>On-chain settlements</span><strong id="settlements">—</strong><small>no channel opened in this simulation</small></article>
+          <article class="metric"><span id="spend-label">Simulated spend</span><strong id="spent">—</strong><small>of <span id="budget">—</span> <span id="budget-label">policy budget</span></small></article>
+          <article class="metric"><span id="duration-label">Total simulated latency</span><strong id="duration">—</strong><small>provider p95: <span id="p95">—</span></small></article>
+          <article class="metric"><span>On-chain settlements</span><strong id="settlements">—</strong><small id="settlement-caption">no channel opened in this simulation</small></article>
         </section>
         <div class="insights-grid">
           <section class="panel chart-panel" id="performance">
-            <div class="panel-heading"><div><div class="eyebrow">PERFORMANCE</div><h2>Latency by step</h2><p>Provider time for each simulated call.</p></div><span class="pill">50 steps</span></div>
+            <div class="panel-heading"><div><div class="eyebrow">PERFORMANCE</div><h2>Latency by step</h2><p id="latency-caption">Provider time for each simulated call.</p></div><span class="pill" id="chart-step-count">50 steps</span></div>
             <div class="chart-wrap">
               <div class="chart-scale"><span id="chart-max">—</span><span id="chart-mid">—</span><span>0 ms</span></div>
               <svg viewBox="0 0 640 220" preserveAspectRatio="none" role="img" aria-label="Latency by step chart">
@@ -92,8 +93,18 @@
             </dl>
           </section>
         </div>
+        <section class="panel settlement-panel" id="settlement-panel" hidden>
+          <div class="panel-heading"><div><h2>Sandbox settlement</h2><p>Recorded MPP channel close, confirmed on Surfpool.</p></div></div>
+          <dl>
+            <div><dt>Deposited</dt><dd id="settlement-deposited">—</dd></div>
+            <div><dt>Spent</dt><dd id="settlement-spent">—</dd></div>
+            <div><dt>Refunded</dt><dd id="settlement-refunded">—</dd></div>
+            <div><dt>RPC status</dt><dd id="settlement-status">—</dd></div>
+            <div><dt>Signature</dt><dd id="settlement-signature" class="signature">—</dd></div>
+          </dl>
+        </section>
         <section class="panel steps-panel" id="steps">
-          <div class="panel-heading"><div><h2>Step timeline</h2><p>Policy decision, cost, and latency for every step.</p></div><span class="pill" id="step-total">— steps</span></div>
+          <div class="panel-heading"><div><h2>Step timeline</h2><p id="steps-caption">Policy decision, cost, and latency for every step.</p></div><span class="pill" id="step-total">— steps</span></div>
           <div class="table-wrap"><table>
             <thead><tr><th>Step</th><th>Tool</th><th>Provider</th><th>Outcome</th><th>Policy reason</th><th>Cost</th><th>Latency</th></tr></thead>
             <tbody id="step-rows"></tbody>
