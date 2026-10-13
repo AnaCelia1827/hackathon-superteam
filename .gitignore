@@ -13,6 +13,7 @@ target/
 .anchor/
 .surfer/
 test-ledger/
+magicblock-test-storage/
 
 # Node
 node_modules/
@@ -29,4 +30,5 @@ __pycache__/
 
 # Generated benchmark output and OS files
 benchmarks/results/
+spikes/**/results/logs/
 .DS_Store
