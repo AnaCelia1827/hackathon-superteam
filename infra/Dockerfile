@@ -11,6 +11,7 @@ ARG ANCHOR_VERSION=1.0.2
 ARG NODE_VERSION=24.10.0
 ARG NVM_VERSION=v0.40.1
 ARG ER_SDK_VERSION=0.16.2
+ARG EPHEMERAL_VALIDATOR_VERSION=0.14.10
 ARG PAY_KIT_VERSION=0.10.0
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -26,7 +27,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo
 RUN curl -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain "${RUST_VERSION}" --profile minimal \
       --no-modify-path \
- && rustup component add rustfmt clippy
+ && "${CARGO_HOME}/bin/rustup" component add rustfmt clippy \
+ && "${CARGO_HOME}/bin/rustc" --version
 ENV PATH="/usr/local/cargo/bin:${PATH}"
 
 # --- Solana / Agave CLI (pinned) ---
@@ -36,10 +38,8 @@ ENV PATH="/root/.local/share/solana/install/active_release/bin:${PATH}"
 # --- Node (pinned via nvm) ---
 ENV NVM_DIR=/usr/local/nvm
 RUN mkdir -p "${NVM_DIR}" \
- && . "${NVM_DIR}/nvm.sh" \
- && nvm install "${NODE_VERSION}" \
- && nvm alias default "${NODE_VERSION}" \
- && nvm use default
+ && curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash \
+ && bash -c '. "${NVM_DIR}/nvm.sh" && nvm install "${NODE_VERSION}" && nvm alias default "${NODE_VERSION}"'
 ENV PATH="${NVM_DIR}/versions/node/v${NODE_VERSION}/bin:${PATH}"
 
 # --- Anchor via avm (pinned) ---
@@ -48,13 +48,22 @@ RUN cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
  && avm use "${ANCHOR_VERSION}"
 
 # --- MagicBlock ER tooling + pay CLI + ER SDK ---
+# `@magicblock-labs/ephemeral-validator` also provides the `mb-test-validator` binary
+# (there is no standalone `@magicblock-labs/solana-test-validator` package on npm).
 RUN npm install -g \
-      "@magicblock-labs/ephemeral-validator@latest" \
-      "@magicblock-labs/solana-test-validator" \
+      "@magicblock-labs/ephemeral-validator@${EPHEMERAL_VALIDATOR_VERSION}" \
       "@magicblock-labs/ephemeral-rollups-sdk@${ER_SDK_VERSION}" \
       "@solana/pay"
 
 # --- pay-kit (pinned) ---
 RUN pip install --break-system-packages "solana_pay_kit==${PAY_KIT_VERSION}"
+
+# --- yarn (classic, used by the Anchor/MagicBlock example workspaces) ---
+RUN npm install -g yarn@1.22.19
+
+# --- Bake anchor-cli's first-run toolchain setup ---
+# `anchor` self-installs the Agave release it requires (observed: 3.1.10 for anchor-cli 1.0.2,
+# newer than the plan's 3.1.9) plus SBF platform-tools. Doing it at build keeps `make dev`/tests fast.
+RUN anchor --version
 
 WORKDIR /workspace
