@@ -102,6 +102,7 @@ def run_scenario(policy: Policy, *, seed: int = 42, fail_on_steps: frozenset[int
         "provider_latency_p50_ms": int(median(provider_latencies)) if provider_latencies else 0,
         "provider_latency_p95_ms": _percentile(provider_latencies, 0.95),
         "looprail_overhead_p50_ms": 0, "looprail_overhead_p95_ms": 0,
+        "policy_budget_usdc_base_units": policy.budget_usdc_base_units,
         "usdc_authorized_base_units": 0,
         "usdc_reserved_base_units": tracker.reserved,
         "usdc_spent_base_units": tracker.spent,

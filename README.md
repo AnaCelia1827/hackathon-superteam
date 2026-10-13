@@ -19,3 +19,7 @@ Estrutura inicial do monorepo. Os contratos em `packages/contracts/` devem ser d
 | `infra/` | Pessoa A | Ambiente local e serviços de apoio |
 
 O PDF original da ideia está na raiz do repositório.
+
+## Protótipo da Pessoa B
+
+O runtime Python já executa uma sessão simulada de 50 passos e o dashboard local lê os eventos gerados. Veja [apps/runtime/README.md](apps/runtime/README.md) e [apps/dashboard/README.md](apps/dashboard/README.md) para os comandos. Integrações on-chain e pagamentos reais dependem das tarefas da Pessoa A.

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LoopRail — Console</title>
+    <meta name="description" content="Painel de execução do agente LoopRail" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-mark">⟲</span><span>LoopRail</span></div>
+        <div class="workspace-label">WORKSPACE</div>
+        <div class="workspace"><span class="workspace-avatar">L</span><span>Market Intelligence</span></div>
+        <nav aria-label="Navegação">
+          <a class="active" href="#overview">Visão geral</a>
+          <a href="#steps">Passos da sessão</a>
+          <a href="#providers">Providers</a>
+        </nav>
+        <div class="sidebar-bottom">Ambiente local<br /><strong>Protótipo de demonstração</strong></div>
+      </aside>
+      <main id="overview">
+        <header class="topbar">
+          <div>
+            <div class="eyebrow">CONSOLE / SESSÕES / MOCK-50</div>
+            <h1>Visão da execução</h1>
+            <p>Uma tarefa, cinquenta passos, gasto controlado em cada chamada.</p>
+          </div>
+          <div class="header-actions">
+            <span class="status"><span class="status-dot"></span>Simulação local</span>
+            <button disabled title="Disponível quando houver sessão real e endpoint de abort">Encerrar sessão</button>
+          </div>
+        </header>
+        <section class="notice" role="status">
+          <strong>Dados simulados</strong>
+          <span>Custos e latências vêm do cenário reproduzível. Nenhum USDC foi autorizado ou liquidado na Solana.</span>
+        </section>
+        <section class="metrics-grid" aria-label="Métricas principais">
+          <article class="metric"><span>Passos executados</span><strong id="step-count">—</strong><small>market intelligence</small></article>
+          <article class="metric"><span>Custo simulado</span><strong id="spent">—</strong><small>de <span id="budget">—</span> no orçamento da policy</small></article>
+          <article class="metric"><span>Latência total simulada</span><strong id="duration">—</strong><small>p95 do provider: <span id="p95">—</span></small></article>
+          <article class="metric"><span>Liquidações on-chain</span><strong id="settlements">—</strong><small>simulação sem canal aberto</small></article>
+        </section>
+        <div class="content-grid">
+          <section class="panel" id="providers">
+            <div class="panel-heading"><div><h2>Consumo por provider</h2><p>Valores agregados a partir dos passos.</p></div><span class="pill">USDC</span></div>
+            <div id="provider-bars" class="provider-bars"></div>
+          </section>
+          <section class="panel session-panel">
+            <div class="panel-heading"><div><h2>Resumo da sessão</h2><p>Origem e situação dos dados.</p></div></div>
+            <dl>
+              <div><dt>ID da sessão</dt><dd id="session-id">—</dd></div>
+              <div><dt>Modo</dt><dd id="mode">—</dd></div>
+              <div><dt>Transações</dt><dd id="transactions">—</dd></div>
+              <div><dt>Origem das métricas</dt><dd id="source">—</dd></div>
+            </dl>
+          </section>
+        </div>
+        <section class="panel steps-panel" id="steps">
+          <div class="panel-heading"><div><h2>Linha do tempo</h2><p>Decisão da policy, custo e latência de cada passo.</p></div><span class="pill" id="step-total">— passos</span></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Passo</th><th>Ferramenta</th><th>Provider</th><th>Resultado</th><th>Custo</th><th>Latência</th></tr></thead>
+            <tbody id="step-rows"></tbody>
+          </table></div>
+        </section>
+      </main>
+    </div>
+    <script src="./main.js"></script>
+  </body>
+</html>
