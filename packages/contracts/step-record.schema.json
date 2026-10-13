@@ -15,7 +15,7 @@
     "reason": { "type": "string" },
     "cost_usdc_base_units": { "type": "integer", "minimum": 0 },
     "provider_latency_ms": { "type": "integer", "minimum": 0 },
-    "looprail_overhead_ms": { "type": "integer", "minimum": 0 },
+    "looprail_overhead_ms": { "type": ["integer", "null"], "minimum": 0 },
     "cache_hit": { "type": "boolean" },
     "retry_count": { "type": "integer", "minimum": 0 },
     "retry_backoff_ms": { "type": "integer", "minimum": 0 },

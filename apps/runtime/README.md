@@ -16,7 +16,7 @@ To refresh the dashboard prototype data:
 .\.venv\Scripts\python.exe -m looprail.demo --output ../dashboard/data/mock-50.json
 ```
 
-The demo writes 50 step events, a market intelligence report, and metrics as JSON. Mock mode is deterministic for a fixed seed. Replay mode consumes `scenarios/replay/market-intelligence.json` without a network or LLM. `source=simulation`, `onchain_transactions=0`, and `settlements=0` identify virtual payments clearly.
+The demo writes 50 step events, a market intelligence report, and metrics as JSON. Mock mode is deterministic for a fixed seed. Replay mode consumes `scenarios/replay/market-intelligence.json` without a network or LLM. `source=simulation`, `onchain_transactions=0`, and `settlements=0` identify virtual payments clearly. Simulated provider latency is present; unmeasured LoopRail overhead is `null`.
 
 Public SDK example:
 

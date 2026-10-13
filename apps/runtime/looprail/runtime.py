@@ -41,7 +41,7 @@ def _event(
         "reason": reason,
         "cost_usdc_base_units": cost,
         "provider_latency_ms": latency,
-        "looprail_overhead_ms": 0,
+        "looprail_overhead_ms": None,
         "cache_hit": cache_hit,
         "retry_count": retry_count,
         "retry_backoff_ms": retry_backoff_ms,
@@ -128,7 +128,7 @@ class ExecutionEngine:
         receipts = self.payment.close_all()
         events = self.ledger.events(self.session_id)
         latencies = [event["provider_latency_ms"] for event in events if event["provider_latency_ms"] > 0]
-        overheads = [event["looprail_overhead_ms"] for event in events]
+        overheads = [event["looprail_overhead_ms"] for event in events if event["looprail_overhead_ms"] is not None]
         mock_adapters = isinstance(self.payment, MockPaymentAdapter) and isinstance(self.ledger, MockLedger)
         if not mock_adapters:
             raise NotImplementedError("Real receipt-based metrics require the A6/A7 adapters")
@@ -140,8 +140,8 @@ class ExecutionEngine:
             "duration_ms": logical_ms,
             "provider_latency_p50_ms": int(median(latencies)) if latencies else 0,
             "provider_latency_p95_ms": _percentile(latencies, 0.95),
-            "looprail_overhead_p50_ms": int(median(overheads)) if overheads else 0,
-            "looprail_overhead_p95_ms": _percentile(overheads, 0.95),
+            "looprail_overhead_p50_ms": int(median(overheads)) if overheads else None,
+            "looprail_overhead_p95_ms": _percentile(overheads, 0.95) if overheads else None,
             "policy_budget_usdc_base_units": self.policy.budget_usdc_base_units,
             "usdc_authorized_base_units": 0,
             "usdc_reserved_base_units": self.tracker.reserved,
