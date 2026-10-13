@@ -16,6 +16,24 @@ async function loadDashboard() {
   text("transactions", String(metrics.onchain_transactions));
   text("source", metrics.source);
   text("step-total", `${events.length} passos`);
+  const budgetRatio = metrics.policy_budget_usdc_base_units > 0
+    ? metrics.usdc_spent_base_units / metrics.policy_budget_usdc_base_units
+    : 0;
+  text("budget-percent", `${(budgetRatio * 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%`);
+  document.getElementById("budget-fill").style.width = `${Math.min(100, budgetRatio * 100)}%`;
+
+  const latencies = events.map((event) => event.provider_latency_ms);
+  const chartMaximum = Math.max(20, Math.ceil(Math.max(...latencies) / 20) * 20);
+  text("chart-max", `${chartMaximum} ms`);
+  text("chart-mid", `${chartMaximum / 2} ms`);
+  const points = latencies.map((latency, index) => {
+    const x = (index / Math.max(1, latencies.length - 1)) * 640;
+    const y = 200 - (latency / chartMaximum) * 180;
+    return [x.toFixed(1), y.toFixed(1)];
+  });
+  const linePath = points.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x} ${y}`).join(" ");
+  document.getElementById("latency-line").setAttribute("d", linePath);
+  document.getElementById("latency-area").setAttribute("d", `${linePath} L640 200 L0 200 Z`);
 
   const totals = new Map();
   for (const event of events) totals.set(event.provider, (totals.get(event.provider) || 0) + event.cost_usdc_base_units);
